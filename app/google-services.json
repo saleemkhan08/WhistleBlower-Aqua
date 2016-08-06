@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "966396309853",
+    "firebase_url": "https://whistle-blower-aqua-f1347.firebaseio.com",
+    "project_id": "whistle-blower---aqua",
+    "storage_bucket": "whistle-blower---aqua.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966396309853:android:dd0160dd0dc9fccb",
+        "android_client_info": {
+          "package_name": "co.thnki.whistleblower"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "966396309853-vhkqkd9q17v0jqng31g076pkq8cvl959.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.thnki.whistleblower",
+            "certificate_hash": "B5AD50B08642B89514DC63E7AE69221C19C55538"
+          }
+        },
+        {
+          "client_id": "966396309853-jdv0qrusglndvto7s58s2nvbv1p24e51.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyIKVp5toNWZNDc6aKaupqNZ80cbYQGeI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "966396309853-jdv0qrusglndvto7s58s2nvbv1p24e51.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

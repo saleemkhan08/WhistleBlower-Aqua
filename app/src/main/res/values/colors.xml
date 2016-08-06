@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#192331</color>
+    <color name="colorPrimaryLight">#2a3b52</color>
+    <color name="colorPrimaryDark">#101720</color>
+    <color name="colorAccent">#55c4c1</color>
+    <color name="colorAccentDisabled">#38A09E</color>
+
+    <color name="colorAccentPressed">#9EDEDD</color>
+    <color name="divider">#aaaaaa</color>
+    <color name="travel_mode">#F57C00</color>
+    <color name="travel_mode_pressed">#FF9f40</color>
+    <color name="black_semi_transparent">#B2000000</color>
+    <color name="background">#b6b6b6</color>
+    <color name="grey">#888</color>
+    <color name="half_black">#808080</color>
+    <color name="white">#fff</color>
+    <color name="white_pressed">#f1f1f1</color>
+    <color name="blue_semi_transparent">#805677fc</color>
+    <color name="blue_semi_transparent_pressed">#80738ffe</color>
+    <color name="pink">#881010</color>
+    <color name="colorAccentDark">#38A09E</color>
+    <color name="transparent_black">#99000000</color>
+    <color name="colorPrimaryDarkTransparent">#d0101720</color>
+    <color name="colorPrimaryDarkMoreTransparent">#90101720</color>
+    <color name="my_location_radius">#6055c4c1</color>
+
+    <color name="black_overlay">#66000000</color>
+    <color name="colorPrimaryDarkPressed">#666f79</color>
+
+    <color name="crop__button_bar">#f3f3f3</color>
+    <color name="crop__button_text">#666666</color>
+    <color name="crop__selector_pressed">#aa000000</color>
+    <color name="crop__selector_focused">#77000000</color>
+    <color name="transparent">#00ffffff</color>
+</resources>

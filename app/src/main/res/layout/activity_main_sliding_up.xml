@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+    android:id="@+id/sliding_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    sothree:umanoDragView="@+id/dragView"
+    sothree:umanoOverlay="true"
+    sothree:umanoPanelHeight="@dimen/panelHeight"
+    sothree:umanoParallaxOffset="200dp"
+    sothree:umanoScrollableView="@+id/locationAlarmList"
+    sothree:umanoShadowHeight="4dp">
+
+    <!-- MAIN CONTENT -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/panelHeight">
+
+        <include layout="@layout/content_map"/>
+    </FrameLayout>
+
+    <!-- SLIDING LAYOUT -->
+    <LinearLayout
+        android:id="@+id/dragView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:background="#eee"
+        android:focusable="false"
+        android:orientation="vertical">
+
+        <include layout="@layout/sliding_toolbar"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/locationAlarmList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#eee"
+            android:paddingBottom="10dp"/>
+
+        <LinearLayout
+            android:id="@+id/emptyList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                >
+
+                <TextView
+                    android:id="@+id/emptyListTextView"
+                    style="@style/emptyList"
+                    android:text="@string/noLocationAlarmsAreSet"
+                    />
+            </LinearLayout>
+            <include layout="@layout/ad_row"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>

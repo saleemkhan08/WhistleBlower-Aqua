@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_collapseMode="parallax">
+
+    <RelativeLayout
+        android:id="@+id/mapContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"/>
+
+    <RelativeLayout
+        android:id="@+id/searchBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@drawable/search_bar_bg">
+
+        <RelativeLayout
+            android:id="@+id/searchBarInnerWrapper"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            >
+
+            <ImageView
+                android:id="@+id/searchIcon"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:src="@mipmap/search_black"/>
+
+            <TextView
+                android:id="@+id/hoverPlaceName"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@+id/submitButtonWrapper"
+                android:layout_toRightOf="@id/searchIcon"
+                android:background="@android:color/transparent"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                android:text="Unknown Place..."
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="18sp"/>
+
+            <RelativeLayout
+                android:id="@+id/submitButtonWrapper"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:padding="2dp">
+
+                <ProgressBar
+                    android:id="@+id/searchProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="invisible"/>
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/mapAdView"
+            android:layout_below="@+id/searchBarInnerWrapper"
+            android:visibility="gone"
+            android:layout_marginBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/select_location"
+        android:layout_width="35dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:paddingBottom="@dimen/marker_padding"
+        android:src="@mipmap/map_pin"
+        />
+
+    <LinearLayout
+        xmlns:fab="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/map_fab_buttons"
+        android:orientation="vertical">
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/addPhotoButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_icon="@mipmap/plus_white"
+            fab:fab_colorNormal="@color/colorAccent"
+            fab:fab_colorPressed="@color/colorAccentPressed"/>
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/my_loc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_icon="@mipmap/my_loc_white"
+            fab:fab_colorNormal="@color/colorAccent"
+            fab:fab_colorPressed="@color/colorAccentPressed"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:background="#99ffffff"
+        android:visibility="gone"
+        android:id="@+id/searchWaitProgress"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+</RelativeLayout>

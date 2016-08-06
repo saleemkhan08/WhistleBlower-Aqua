@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>latestVersionName</key>
+        <value>3</value>
+    </entry>
+    <entry>
+        <key>newAppPkgName</key>
+        <value>co.thnki.locationalarm</value>
+    </entry>
+    <entry>
+        <key>newAppName</key>
+        <value>Location Alarm</value>
+    </entry>
+    <entry>
+        <key>newAppIcon</key>
+        <value>http://uploads-thnkin.rhcloud.com/uploads/location_alarm_launcher_icon.png</value>
+    </entry>
+    <entry>
+        <key>notificationText</key>
+        <value>From the developers of Location Alarm!</value>
+    </entry>
+    <entry>
+        <key>adUnitId1</key>
+        <value>cca-app-pub-9949935976977846/4866656411</value>
+    </entry>
+    <entry>
+        <key>adUnitId2</key>
+        <value>ca-app-pub-3940256099942544/1072772517</value>
+    </entry>
+    <entry>
+        <key>adUnitId3</key>
+        <value>ca-app-pub-3940256099942544/1072772517</value>
+    </entry>
+</defaultsMap>

@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">Whistle Blower</string>
+    <string name="title_activity_main">Whistle Blower</string>
+    <string name="youHaveReached">You\'ve Reached</string>
+
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="title_activity_scrolling">ScrollingActivity</string>
+
+    <string name="tapToViewList">Tap to view the list</string>
+    <string name="noInternet">No Internet…</string>
+    <string name="slowInternet">Slow Internet…</string>
+    <string name="alarmList">Alarm List</string>
+    <string name="tapToViewMap">Swipe down to view the map</string>
+    <string name="action_km">Kilometers</string>
+    <string name="action_mts">Meters</string>
+    <string name="kilometer">km</string>
+    <string name="meter">m</string>
+    <string name="noLocationAlarmsAreSet">No Location Alarms Are Set …</string>
+    <string name="action_ft">Feet</string>
+    <string name="action_mls">Miles</string>
+    <string name="miles">mi</string>
+    <string name="feet">ft</string>
+    <string name="no_network_access">Please Check Your Internet Connectivity &amp; Try Again!</string>
+    <string name="internet_failure">No Internet!</string>
+    <string name="ad_unit_id">ca-app-pub-3940256099942544/1072772517</string>
+    <string name="listAdSize">320x150</string>
+    <string name="bannerAdSize">320x80</string>
+    <string name="alarmAddress">Alarm Address</string>
+    <string name="range">Range</string>
+    <string name="deleteAlarm">Delete Alarm</string>
+    <string name="turnOnAlarm">Turn on or turn off alarm</string>
+    <string name="test_admob_unit_id">ca-app-pub-3940256099942544/3986624511</string>
+    <string name="test_admob_express_unit_id">ca-app-pub-3940256099942544/1072772517</string>
+    <string name="travel_mode_helptext">Long Press to turn Travel Mode : On</string>
+    <string name="travel_mode_on">Travel Mode : On</string>
+    <string name="travel_mode_off">Travel Mode : Off</string>
+    <string name="travel_mode_off_helptext">Turn off \"Travel Mode\" to stop auto movement.</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="something_went_wrong">Something went wrong!</string>
+    <string name="please_try_again">Please Try again!</string>
+    <string name="issue_title_hint">Describe in brief!</string>
+    <string name="addIssue">Add Issue</string>
+    <string name="post">POST</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="placeName">Place Name</string>
+    <string name="select_issue_type">Select Issue Type</string>
+    <string name="anonymous_confirmation">Post This Issue Anonymously?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="title_activity_crop_image">CropImageActivity</string>
+    <string name="crop__saving">Saving picture…</string>
+    <string name="crop__wait">Please wait…</string>
+    <string name="crop__pick_error">No image sources available</string>
+    <string name="anonymous">Anonymous</string>
+    <string-array name="issue_types">
+        <item>#Humanity</item>
+        <item>#AnimalCare</item>
+        <item>#Environmental</item>
+    </string-array>
+</resources>

@@ -1,0 +1,60 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        WhistleBlower {
+            keyAlias 'aqua'
+            keyPassword 'third.o5'
+            storeFile file('C:/Users/Saleem Khan/Desktop/Files/Thnkin/WhistleBlower.jks')
+            storePassword 'third.o5'
+        }
+    }
+    compileSdkVersion 24
+    buildToolsVersion "23.0.3"
+    defaultConfig {
+        applicationId "co.thnki.whistleblower"
+        minSdkVersion 19
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.WhistleBlower
+        }
+        debug {
+            signingConfig signingConfigs.WhistleBlower
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/NOTICE' // will not include NOTICE file
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+    lintOptions {
+        disable "ResourceType"
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.android.support:appcompat-v7:24.0.0-beta1'
+    compile 'com.google.android.gms:play-services:9.2.0'
+    compile 'com.mcxiaoke.volley:library:1.0.19'
+    compile 'com.squareup:otto:1.3.8'
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'com.android.support:design:24.0.0-beta1'
+    compile 'com.android.support:cardview-v7:24.0.0-beta1'
+    compile 'com.getbase:floatingactionbutton:1.10.1'
+    compile 'com.sothree.slidinguppanel:library:3.3.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha4'
+    testCompile 'junit:junit:4.12'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
+}
+apply plugin: 'com.google.gms.google-services'

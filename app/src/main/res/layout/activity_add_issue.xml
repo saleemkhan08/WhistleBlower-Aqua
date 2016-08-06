@@ -22,7 +22,6 @@
             android:weightSum="4"
             >
 
-
             <ImageView
                 android:id="@+id/zone"
                 android:layout_width="0dp"

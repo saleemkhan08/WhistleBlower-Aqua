@@ -31,6 +31,7 @@ public class ImageUtil
     public ImageLoader mImageLoader;
     Context mContext;
     DisplayImageOptions dpOptions, issueOptions;
+
     public ImageUtil(Context context)
     {
         mContext = context;
@@ -70,7 +71,7 @@ public class ImageUtil
         }
     }
 
-    public static void displayImage(Context context, String photo_url, ImageView view, boolean isRounded)
+    public void displayImage(Context context, String photo_url, ImageView view, boolean isRounded)
     {
         ImageLoader imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(context));
@@ -140,7 +141,7 @@ public class ImageUtil
     public static final String IMAGE_DIRECTORY_NAME = "WhistleBlower";
     public static File mediaStorageDir;
 
-    public static File getMediaStorageDir()
+    public  File getMediaStorageDir()
     {
         mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
@@ -156,17 +157,13 @@ public class ImageUtil
         }
         return mediaStorageDir;
     }
-    public ImageUtil(AppCompatActivity activity)
-    {
-        mActivity = activity;
-    }
 
-    public static void pickImage()
+    public  void pickImage()
     {
 
     }
 
-    public static void getImage(final AppCompatActivity activity, final boolean isFromGallery)
+    public  void getImage(final AppCompatActivity activity, final boolean isFromGallery)
     {
         if (!PermissionUtil.isCameraAndStoragePermissionsAvailable())
         {
@@ -191,7 +188,7 @@ public class ImageUtil
         }
     }
 
-    private static void getImageFromDevice(AppCompatActivity activity, boolean isFromGallery)
+    private  void getImageFromDevice(AppCompatActivity activity, boolean isFromGallery)
     {
         if(isFromGallery)
         {
@@ -204,13 +201,13 @@ public class ImageUtil
             activity.startActivityForResult(intent, CAPTURE_IMAGE_REQUEST);
         }
     }
-    private static Uri getOutputMediaFileUri(int type)
+    private  Uri getOutputMediaFileUri(int type)
     {
         imageUri = Uri.fromFile(getOutputMediaFile(type));
         return imageUri;
     }
 
-    private static File getOutputMediaFile(int type)
+    private  File getOutputMediaFile(int type)
     {
         // Create a media file name
         if(mediaStorageDir == null)
@@ -237,7 +234,7 @@ public class ImageUtil
         return mediaFile;
     }
 
-    public static void launchIssueEditor(AppCompatActivity mActivity, boolean isPhoto)
+    public  void launchIssueEditor(AppCompatActivity mActivity, boolean isPhoto)
     {
         Intent intent = new Intent(mActivity, AddIssueActivity.class);
         intent.putExtra(IS_PHOTO, isPhoto);

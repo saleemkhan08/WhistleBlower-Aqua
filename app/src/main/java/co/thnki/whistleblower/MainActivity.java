@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -26,15 +28,21 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.squareup.otto.Subscribe;
 
+import java.util.ArrayList;
+
 import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.ButterKnife;
+import co.thnki.whistleblower.adapters.IssueAdapter;
+import co.thnki.whistleblower.doas.IssuesDao;
 import co.thnki.whistleblower.fragments.MapFragment;
 import co.thnki.whistleblower.pojos.Issue;
 import co.thnki.whistleblower.receivers.InternetConnectivityListener;
+import co.thnki.whistleblower.services.RemoteConfigService;
 import co.thnki.whistleblower.singletons.Otto;
 import co.thnki.whistleblower.utils.LocationUtil;
+import co.thnki.whistleblower.utils.TransitionUtil;
 
 import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.COLLAPSED;
 import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.EXPANDED;
@@ -43,6 +51,10 @@ public class MainActivity extends AppCompatActivity
 {
     public static final String TAG = "LocationAlarmMain";
     private static final String MAP_FRAGMENT = "mapFragment";
+
+    private static final String GET_ISSUES = "getIssues";
+    private static final String LIMIT = "limit";
+    private static final String OFFSET = "offset";
 
     @Bind(R.id.sliding_layout)
     SlidingUpPanelLayout mLayout;
@@ -96,8 +108,8 @@ public class MainActivity extends AppCompatActivity
     @Bind(R.id.emptyListTextView)
     TextView emptyListTextView;
 
-    @Bind(R.id.locationAlarmList)
-    RecyclerView mLocationAlarmList;
+    @Bind(R.id.issuesRecyclerView)
+    RecyclerView mIssuesRecyclerView;
 
     @Bind(R.id.card_view)
     CardView adCardView;
@@ -106,6 +118,7 @@ public class MainActivity extends AppCompatActivity
      * End of Fragment Content
      */
 
+    IssueAdapter mIssueAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -127,6 +140,46 @@ public class MainActivity extends AppCompatActivity
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
         }
+
+        initializeIssueList();
+    }
+
+    private void initializeIssueList()
+    {
+        ArrayList<Issue> issuesList = IssuesDao.getList();
+        if (issuesList.size() < 1)
+        {
+            showEmptyListString();
+        }
+        String mAdUnitId = WhistleBlower.getPreferences()
+                .getString(RemoteConfigService.AD_UNIT_ID + "2", "ca-app-pub-9949935976977846/3250322417");
+
+        MobileAds.initialize(WhistleBlower.getAppContext(), mAdUnitId);
+
+        mIssueAdapter = new IssueAdapter(this, issuesList);
+        mIssuesRecyclerView.setAdapter(mIssueAdapter);
+        mIssuesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //mIssueAdapter.updateList(mAlarmList);
+    }
+
+    private void loadEmptyListAd()
+    {
+        //new AdViewHolder(adCardView);
+    }
+
+    private void hideEmptyListString()
+    {
+        TransitionUtil.defaultTransition(emptyList);
+        emptyList.setVisibility(View.GONE);
+        mIssuesRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmptyListString()
+    {
+        TransitionUtil.defaultTransition(emptyList);
+        emptyList.setVisibility(View.VISIBLE);
+        mIssuesRecyclerView.setVisibility(View.GONE);
+        loadEmptyListAd();
     }
 
     private void initializeAppBarLayout()
@@ -141,7 +194,6 @@ public class MainActivity extends AppCompatActivity
     {
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
-
 
     private void addMapFragment(FragmentManager manager)
     {

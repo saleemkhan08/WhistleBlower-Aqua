@@ -78,6 +78,7 @@ public class AddIssueActivity extends AppCompatActivity
     ImageView mEditIcon;
     private int mRadius;
     private String mAnonymousString;
+    private ImageUtil mImageUtil;
 
 
     @Override
@@ -93,7 +94,7 @@ public class AddIssueActivity extends AppCompatActivity
         mAddress = intent.getStringExtra(MapFragment.ADDRESS);
         mLatLng = intent.getParcelableExtra(MapFragment.LATLNG);
         mRadius = intent.getIntExtra(MapFragment.RADIUS, 100);
-
+        mImageUtil = new ImageUtil(this);
         mAreaTypeName.setOnFocusChangeListener(new View.OnFocusChangeListener()
         {
             @Override
@@ -168,7 +169,7 @@ public class AddIssueActivity extends AppCompatActivity
             }
             else
             {
-                ImageUtil.displayImage(this, dpUrl, mProfilePic, true);
+                mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
             }
         }
     }
@@ -194,10 +195,10 @@ public class AddIssueActivity extends AppCompatActivity
                 mDialogsUtil.showAnonymousDialog();
                 break;
             case R.id.camera:
-                ImageUtil.getImage(this, false);
+                mImageUtil.getImage(this, false);
                 break;
             case R.id.gallery:
-                ImageUtil.getImage(this,true);
+                mImageUtil.getImage(this,true);
                 break;
             case R.id.editIcon:
                 mAreaTypeName.requestFocus();
@@ -244,7 +245,7 @@ public class AddIssueActivity extends AppCompatActivity
 
     private void beginCrop(Uri source)
     {
-        Uri destination = Uri.fromFile(new File(ImageUtil.getMediaStorageDir(), "temp.png"));
+        Uri destination = Uri.fromFile(new File(mImageUtil.getMediaStorageDir(), "temp.png"));
         Crop.of(source, destination).asSquare().start(this);
     }
 

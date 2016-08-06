@@ -26,6 +26,7 @@ import com.google.android.gms.common.api.Status;
 
 import co.thnki.whistleblower.interfaces.ConnectivityListener;
 import co.thnki.whistleblower.pojos.Accounts;
+import co.thnki.whistleblower.services.NewsFeedsUpdateService;
 import co.thnki.whistleblower.utils.ConnectivityUtil;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ConnectivityListener
@@ -50,6 +51,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         TextView title = (TextView) findViewById(R.id.title);
         title.setTypeface(WhistleBlower.getTypeFace());
         checkGooglePlayServices();
+        startService(new Intent(this, NewsFeedsUpdateService.class));
     }
 
     private void checkGooglePlayServices()

@@ -52,6 +52,10 @@
     <string name="crop__wait">Please wait…</string>
     <string name="crop__pick_error">No image sources available</string>
     <string name="anonymous">Anonymous</string>
+    <string name="action_report">Report Spam</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="issueDescription">Issue Description</string>
     <string-array name="issue_types">
         <item>#Humanity</item>
         <item>#AnimalCare</item>

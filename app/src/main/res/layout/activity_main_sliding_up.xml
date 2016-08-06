@@ -10,7 +10,7 @@
     sothree:umanoOverlay="true"
     sothree:umanoPanelHeight="@dimen/panelHeight"
     sothree:umanoParallaxOffset="200dp"
-    sothree:umanoScrollableView="@+id/locationAlarmList"
+    sothree:umanoScrollableView="@+id/issuesRecyclerView"
     sothree:umanoShadowHeight="4dp">
 
     <!-- MAIN CONTENT -->
@@ -36,11 +36,10 @@
         <include layout="@layout/sliding_toolbar"/>
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/locationAlarmList"
+            android:id="@+id/issuesRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#eee"
-            android:paddingBottom="10dp"/>
+            />
 
         <LinearLayout
             android:id="@+id/emptyList"

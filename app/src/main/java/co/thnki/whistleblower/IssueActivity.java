@@ -191,12 +191,13 @@ public class IssueActivity extends AppCompatActivity
 
     private void editIssue(Issue issue)
     {
-        WhistleBlower.toast("Not Implemented");
+        Intent intent = new Intent(this, AddIssueActivity.class);
+        intent.putExtra(AddIssueActivity.ISSUE_DATA, issue);
+        startActivity(intent);
     }
 
     private void showProgressDialog(String msg)
     {
-
         if (mProgressDialog == null)
         {
             mProgressDialog = new ProgressDialog(this);

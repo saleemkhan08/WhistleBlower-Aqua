@@ -23,6 +23,7 @@ import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import co.thnki.whistleblower.AddIssueActivity;
 import co.thnki.whistleblower.IssueActivity;
 import co.thnki.whistleblower.R;
 import co.thnki.whistleblower.WhistleBlower;
@@ -240,7 +241,9 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
 
     private void editIssue(Issue issue)
     {
-        toast("Not Implemented");
+        Intent intent = new Intent(mActivity, AddIssueActivity.class);
+        intent.putExtra(AddIssueActivity.ISSUE_DATA, issue);
+        mActivity.startActivity(intent);
     }
 
     @Override

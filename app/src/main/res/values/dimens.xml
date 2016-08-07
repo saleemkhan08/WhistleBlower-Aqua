@@ -35,6 +35,7 @@
     <dimen name="loginTitle">40sp</dimen>
     <dimen name="loginDesc">25sp</dimen>
     <dimen name="toolbar_title">35sp</dimen>
+    <dimen name="optionHeight">80dp</dimen>
 
     <item name="totalWeight" format="float" type="dimen">11</item>
     <item name="imageWeight" format="float" type="dimen">8.5</item>

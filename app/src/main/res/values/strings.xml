@@ -56,6 +56,16 @@
     <string name="action_edit">Edit</string>
     <string name="action_delete">Delete</string>
     <string name="issueDescription">Issue Description</string>
+    <string name="settings">Settings</string>
+    <string name="mapType">Map Type</string>
+    <string name="normal">Normal</string>
+    <string name="satellite">Satellite</string>
+    <string name="terrain">Terrain</string>
+    <string name="hybrid">Hybrid</string>
+    <string name="logout">Logout</string>
+    <string name="hintMessages">Hint messages</string>
+    <string name="hide">Hide</string>
+    <string name="show">Show</string>
     <string-array name="issue_types">
         <item>#Humanity</item>
         <item>#AnimalCare</item>

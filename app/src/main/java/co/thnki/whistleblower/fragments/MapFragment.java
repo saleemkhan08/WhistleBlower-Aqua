@@ -1,6 +1,7 @@
 package co.thnki.whistleblower.fragments;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
@@ -73,9 +74,11 @@ public class MapFragment extends SupportMapFragment implements
     public static final String DIALOG_DISMISS = "dialogDismiss";
     public static final String TURN_OFF_TRAVEL_MODE = "turnOffTravelMode";
     public static final String TURN_ON_TRAVEL_MODE = "turnOnTravelMode";
+    public static final String MAP_TYPE_CHANGED = "mapTypeChanged";
     public static final String ADDRESS = "address";
     public static final String LATLNG = "latlng";
     public static final String RADIUS = "radius";
+    private static final String FRAGMENT_TAG_SETTINGS = "settingsFragment";
     @BindString(R.string.noInternet)
     String NO_INTERNET;
 
@@ -89,7 +92,6 @@ public class MapFragment extends SupportMapFragment implements
     private static final String BEARING = "BEARING";
 
     private static final String MAP_TYPE = "mapType";
-    private static final String KEY_TRAVELLING_MODE_DISP_COUNTER = "KEY_TRAVELLING_MODE_DISP_COUNTER";
     private static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 91;
     private static final String ACCURACY = "ACCURACY";
 
@@ -133,7 +135,10 @@ public class MapFragment extends SupportMapFragment implements
     TextView searchText;
 
     @Bind(R.id.searchProgress)
-    ProgressBar searchProgress;
+    ProgressBar mSearchProgress;
+
+    @Bind(R.id.settingsIcon)
+    ImageView mSettingsIcon;
 
     @Bind(R.id.radiusSeekBarValueWrapper)
     View radiusSeekBarValueWrapper;
@@ -176,6 +181,7 @@ public class MapFragment extends SupportMapFragment implements
     private Toast mAddPhotoToast;
     private Toast mSelectLocationToast;
     private boolean mTravelModeUiState;
+
     public MapFragment()
     {
         Log.d("MapFragmentFlowLogs", "Constructor");
@@ -201,7 +207,6 @@ public class MapFragment extends SupportMapFragment implements
         mPreferences = WhistleBlower.getPreferences();
         startLocationTrackingService();
         Log.d("MapFragmentFlowLogs", "Start Service Called");
-
         setupRadiusSeekBar();
         setUpMyLocationButton();
     }
@@ -340,13 +345,13 @@ public class MapFragment extends SupportMapFragment implements
         else
         {
             showAddPhotoButtonAndHideAddButton();
-            
+
         }
     }
 
     private void hideToast()
     {
-        if(mSelectLocationToast != null)
+        if (mSelectLocationToast != null)
         {
             mSelectLocationToast.cancel();
             mRadiusToast.cancel();
@@ -421,9 +426,12 @@ public class MapFragment extends SupportMapFragment implements
             mTitleBar.setVisibility(View.INVISIBLE);
             drawCircleOnMap();
             changeTravelModeState(false, false);
-            selectLocationHintToast();
-            setRadiusHintToast();
-            addPhotoHintToast();
+            if (mPreferences.getBoolean(SettingsFragment.SHOW_HINTS, true))
+            {
+                selectLocationHintToast();
+                setRadiusHintToast();
+                addPhotoHintToast();
+            }
         }
         else
         {
@@ -474,12 +482,8 @@ public class MapFragment extends SupportMapFragment implements
             {
                 startLocationTrackingService();
                 showMyLocOnMap(true);
-                int dispCnt = mPreferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
-                if (dispCnt < 5)
+                if (mPreferences.getBoolean(SettingsFragment.SHOW_HINTS,true))
                 {
-                    mPreferences.edit()
-                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, ++dispCnt)
-                            .apply();
                     toast(getString(R.string.travel_mode_helptext));
                 }
             }
@@ -494,9 +498,6 @@ public class MapFragment extends SupportMapFragment implements
                 if (!getTravelMode())
                 {
                     changeTravelModeState(true, true);
-                    mPreferences.edit()
-                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 5)
-                            .apply();
                     startLocationTrackingService();
                 }
                 else
@@ -553,7 +554,7 @@ public class MapFragment extends SupportMapFragment implements
     {
         hideSubmitButtonAndShowAddButton();
         hideToast();
-        Intent intent =new Intent(mActivity, AddIssueActivity.class);
+        Intent intent = new Intent(mActivity, AddIssueActivity.class);
         intent.putExtra(LATLNG, mGeoCodeLatLng);
         intent.putExtra(ADDRESS, searchText.getText().toString());
         intent.putExtra(RADIUS, getRadiusInMeter());
@@ -996,12 +997,14 @@ public class MapFragment extends SupportMapFragment implements
 
     private void showSearchProgress()
     {
-        searchProgress.setVisibility(View.VISIBLE);
+        mSearchProgress.setVisibility(View.VISIBLE);
+        mSettingsIcon.setVisibility(View.GONE);
     }
 
     private void hideSearchProgress()
     {
-        searchProgress.setVisibility(View.GONE);
+        mSearchProgress.setVisibility(View.GONE);
+        mSettingsIcon.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -1025,8 +1028,25 @@ public class MapFragment extends SupportMapFragment implements
         mRetryAttemptsCount = 0;
     }
 
+    @OnClick(R.id.settingsIcon)
+    public void showSettings()
+    {
+        FragmentManager mFragmentManager = mActivity.getFragmentManager();
+        SettingsFragment settingsFragment = (SettingsFragment) mFragmentManager.findFragmentByTag(FRAGMENT_TAG_SETTINGS);
+        if (settingsFragment == null)
+        {
+            settingsFragment = new SettingsFragment();
+        }
+        mFragmentManager.executePendingTransactions();
+        if (!settingsFragment.isAdded())
+        {
+            settingsFragment.show(mFragmentManager, FRAGMENT_TAG_SETTINGS);
+        }
+        hideToast();
+    }
+
     @SuppressWarnings("WeakerAccess")
-    @OnClick({R.id.searchIcon, R.id.hoverPlaceName, R.id.searchProgress})
+    @OnClick({R.id.searchIcon, R.id.hoverPlaceName})
     public void searchPlace()
     {
         changeTravelModeState(false, false);
@@ -1076,6 +1096,9 @@ public class MapFragment extends SupportMapFragment implements
                 break;
             case TURN_ON_TRAVEL_MODE:
                 changeTravelModeState(true, false);
+                break;
+            case MAP_TYPE_CHANGED:
+                setMapType();
                 break;
         }
     }

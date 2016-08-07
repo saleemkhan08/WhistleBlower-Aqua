@@ -66,7 +66,7 @@ public class AddIssueActivity extends AppCompatActivity
     private LatLng mLatLng;
 
     @Bind(areaTypeName)
-    EditText mAreaTypeName;
+    EditText mAreaTypeNameEditText;
 
     @Bind(R.id.issueDescription)
     EditText mDescription;
@@ -79,6 +79,7 @@ public class AddIssueActivity extends AppCompatActivity
     private int mRadius;
     private String mAnonymousString;
     private ImageUtil mImageUtil;
+    private Issue mIssue;
 
 
     @Override
@@ -91,11 +92,18 @@ public class AddIssueActivity extends AppCompatActivity
         mDialogsUtil = new DialogsUtil(this);
         mPreferences = WhistleBlower.getPreferences();
         Intent intent = getIntent();
-        mAddress = intent.getStringExtra(MapFragment.ADDRESS);
-        mLatLng = intent.getParcelableExtra(MapFragment.LATLNG);
-        mRadius = intent.getIntExtra(MapFragment.RADIUS, 100);
+        if(intent.hasExtra(ISSUE_DATA))
+        {
+            mIssue = intent.getParcelableExtra(ISSUE_DATA);
+        }
+        else
+        {
+            mAddress = intent.getStringExtra(MapFragment.ADDRESS);
+            mLatLng = intent.getParcelableExtra(MapFragment.LATLNG);
+            mRadius = intent.getIntExtra(MapFragment.RADIUS, 100);
+        }
         mImageUtil = new ImageUtil(this);
-        mAreaTypeName.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        mAreaTypeNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener()
         {
             @Override
             public void onFocusChange(View v, boolean hasFocus)
@@ -118,6 +126,30 @@ public class AddIssueActivity extends AppCompatActivity
         super.onResume();
         showAreaNameAndTypeDetails();
         showUserNameAndPic();
+        showDescription();
+        showIssuePic();
+    }
+
+    private void showIssuePic()
+    {
+        if(mIssue !=null)
+        {
+            mImageUtil.displayImage(mIssue.imgUrl,mImgPreview,false);
+        }
+    }
+    private void showDescription()
+    {
+        if(mIssue != null)
+        {
+            if(!mIssue.description.trim().isEmpty())
+            {
+                mDescription.setText(mIssue.description);
+            }
+            else
+            {
+                mDescription.setText("");
+            }
+        }
     }
 
     private boolean isMyServiceRunning()
@@ -153,33 +185,66 @@ public class AddIssueActivity extends AppCompatActivity
     {
         mAnonymousString = getString(R.string.anonymous);
         Drawable mAnonymousDrawable = ContextCompat.getDrawable(this, R.mipmap.user_primary_dark_o);
-        if (mPreferences.getBoolean(IssuesDao.ANONYMOUS, false))
+
+        if(mIssue != null)
         {
-            mProfilePic.setImageDrawable(mAnonymousDrawable);
-            mUsername.setText(mAnonymousString);
-        }
-        else
-        {
-            String dpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
-            String userName = mPreferences.getString(Accounts.NAME, mAnonymousString);
-            mUsername.setText(userName);
-            if (dpUrl.trim().isEmpty())
+            if (mIssue.anonymous)
             {
-                mProfilePic.setBackground(mAnonymousDrawable);
+                mProfilePic.setImageDrawable(mAnonymousDrawable);
+                mUsername.setText(mAnonymousString);
             }
             else
             {
-                mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
+                String dpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
+                String userName = mPreferences.getString(Accounts.NAME, mAnonymousString);
+                mUsername.setText(userName);
+                if (dpUrl.trim().isEmpty())
+                {
+                    mProfilePic.setBackground(mAnonymousDrawable);
+                }
+                else
+                {
+                    mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
+                }
+            }
+        }
+        else
+        {
+            if (mPreferences.getBoolean(IssuesDao.ANONYMOUS, false))
+            {
+                mProfilePic.setImageDrawable(mAnonymousDrawable);
+                mUsername.setText(mAnonymousString);
+            }
+            else
+            {
+                String dpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
+                String userName = mPreferences.getString(Accounts.NAME, mAnonymousString);
+                mUsername.setText(userName);
+                if (dpUrl.trim().isEmpty())
+                {
+                    mProfilePic.setBackground(mAnonymousDrawable);
+                }
+                else
+                {
+                    mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
+                }
             }
         }
     }
 
     private void showAreaNameAndTypeDetails()
     {
-        String placeTypeNameText = "@" + mAddress;
-        String temp = mDialogsUtil.getSelectedIssueType();
-        placeTypeNameText += ",\n" + temp;
-        mAreaTypeName.setText(placeTypeNameText);
+        if(mIssue != null)
+        {
+            mAreaTypeNameEditText.setText(mIssue.areaType);
+        }
+        else
+        {
+            String placeTypeNameText = "@" + mAddress;
+            String temp = mDialogsUtil.getSelectedIssueType();
+            placeTypeNameText += ",\n" + temp;
+            mAreaTypeNameEditText.setText(placeTypeNameText);
+        }
     }
 
     @OnClick({R.id.zone,R.id.anonymous,R.id.camera,R.id.gallery,R.id.postIssue})
@@ -201,7 +266,7 @@ public class AddIssueActivity extends AppCompatActivity
                 mImageUtil.getImage(this,true);
                 break;
             case R.id.editIcon:
-                mAreaTypeName.requestFocus();
+                mAreaTypeNameEditText.requestFocus();
                 break;
             case R.id.postIssue:
                 addIssue();
@@ -216,7 +281,7 @@ public class AddIssueActivity extends AppCompatActivity
             Intent intent = new Intent(this, AddIssueService.class);
             Issue issue = new Issue();
             issue.anonymous = mPreferences.getBoolean(ANONYMOUS, false);
-            issue.areaType = mAreaTypeName.getText().toString();
+            issue.areaType = mAreaTypeNameEditText.getText().toString();
             issue.description = mDescription.getText().toString();
             issue.imgUrl = mImageUri;
             issue.latitude = mLatLng.latitude + "";

@@ -196,7 +196,7 @@ public void addMarkerAndCircle(Issue issue)
         switch (index)
         {
             case TYPE_ISSUE:
-                return R.mipmap.bell_primary_dark;
+                return R.mipmap.issue_primary_dark;
             default:
                 return R.mipmap.map_pin;
         }

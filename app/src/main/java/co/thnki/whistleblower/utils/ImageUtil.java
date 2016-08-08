@@ -178,7 +178,7 @@ public class ImageUtil
                 @Override
                 public void onDenied()
                 {
-                    WhistleBlower.toast("Image can't be added without this Permission");
+                    WhistleBlower.toast(activity.getString(R.string.image_permission_denial));
                 }
             });
         }
@@ -233,12 +233,4 @@ public class ImageUtil
         }
         return mediaFile;
     }
-
-    public  void launchIssueEditor(AppCompatActivity mActivity, boolean isPhoto)
-    {
-        Intent intent = new Intent(mActivity, AddIssueActivity.class);
-        intent.putExtra(IS_PHOTO, isPhoto);
-        mActivity.startActivity(intent);
-    }
-
 }

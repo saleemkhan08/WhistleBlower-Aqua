@@ -2,6 +2,8 @@ package co.thnki.whistleblower.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 import com.android.volley.VolleyError;
 
@@ -47,14 +49,23 @@ public class NewsFeedsUpdateService extends IntentService
                 try
                 {
                     JSONArray array = new JSONArray(result);
-                    IssuesDao.delete();//TODO Find a better Logic to do this
+                    try
+                    {
+                        IssuesDao.delete();//TODO Find a better Logic to do this
+                    }
+                    catch (SQLiteException e)
+                    {
+                        Log.d("Database", "Does not exist");
+                    }
                     int totalNoOfIssues = array.length();
                     for (int issueIndex = 0; issueIndex < totalNoOfIssues; issueIndex++)
                     {
                         Issue issue = new Issue();
                         JSONObject json = (JSONObject) array.get(issueIndex);
                         issue.issueId = json.getString(IssuesDao.ISSUE_ID);
-                        issue.imgUrl = VolleyUtil.IMAGE_URL + issue.issueId + ".png";
+                        issue.photoId = json.getString(IssuesDao.PHOTO_ID);
+                        issue.imgUrl = VolleyUtil.IMAGE_URL + issue.photoId + ".png";
+                        Log.d("imgUrl","Service : "+issue.imgUrl);
                         issue.userDpUrl = json.getString(IssuesDao.USER_DP_URL);
                         issue.userId = json.getString(IssuesDao.USER_ID);
                         issue.username = json.getString(IssuesDao.USERNAME);

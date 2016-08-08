@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardElevation="5dp"
+        android:transitionName="@string/sharedElement1"
         android:background="@color/white">
 
         <LinearLayout
@@ -75,18 +76,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 >
-
-                <TextView
-                    android:id="@+id/issueDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:paddingBottom="20dp"
-                    android:paddingEnd="10dp"
-                    android:paddingStart="10dp"
-                    android:paddingTop="20dp"
-                    android:text="@string/issueDescription"
-                    />
 
                 <co.thnki.whistleblower.view.SquareImageView
                     android:id="@+id/issueImage"

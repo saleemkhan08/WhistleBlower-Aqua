@@ -88,6 +88,7 @@
 
             <co.thnki.whistleblower.view.SquareImageView
                 android:id="@+id/issueImage"
+                android:transitionName="@string/sharedElement1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"

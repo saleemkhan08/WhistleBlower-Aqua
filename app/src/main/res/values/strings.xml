@@ -66,6 +66,16 @@
     <string name="hintMessages">Hint messages</string>
     <string name="hide">Hide</string>
     <string name="show">Show</string>
+    <string name="pleaseUploadImage">Please Upload Image</string>
+    <string name="pleaseEnterAddress">Please enter the address with \"@\" prefix</string>
+    <string name="pleaseEnterIssueType">Please enter the issue type with \"#\" prefix</string>
+    <string name="issuePosted">Issue Posted</string>
+    <string name="clickNotificationToOpen">Click on notification to open it</string>
+    <string name="postingIssueFailed">Posting Issue Failed</string>
+    <string name="clickOnRetryToPostAgain">Click on retry to post again</string>
+    <string name="image_permission_denial">Image can\'t be added without this Permission</string>
+    <string name="sharedElement1">sharedElement1</string>
+    <string name="sharedElement2">sharedElement2</string>
     <string-array name="issue_types">
         <item>#Humanity</item>
         <item>#AnimalCare</item>

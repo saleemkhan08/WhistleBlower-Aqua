@@ -1,7 +1,6 @@
 package co.thnki.whistleblower;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -9,17 +8,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.squareup.otto.Subscribe;
@@ -30,6 +30,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -40,18 +42,28 @@ import co.thnki.whistleblower.pojos.Accounts;
 import co.thnki.whistleblower.pojos.Issue;
 import co.thnki.whistleblower.services.AddIssueService;
 import co.thnki.whistleblower.singletons.Otto;
+import co.thnki.whistleblower.utils.ConnectivityUtil;
 import co.thnki.whistleblower.utils.DialogsUtil;
 import co.thnki.whistleblower.utils.ImageUtil;
+import co.thnki.whistleblower.utils.LocationUtil;
 
 import static co.thnki.whistleblower.R.id.areaTypeName;
 import static co.thnki.whistleblower.R.id.editIcon;
+import static co.thnki.whistleblower.WhistleBlower.toast;
 import static co.thnki.whistleblower.doas.IssuesDao.ANONYMOUS;
+import static co.thnki.whistleblower.utils.DialogsUtil.ISSUE_TYPE;
 
 public class AddIssueActivity extends AppCompatActivity
 {
     public static final String ISSUE_DATA = "issueData";
     private static final int REQUIRED_WIDTH = 640;
     public static final int REQUEST_CODE_IMAGE_PICKER = 1020;
+    private static final int IMAGE_ERROR = 1;
+    private static final int AREA_TYPE_ERROR = 2;
+    private static final int ISSUE_TYPE_ERROR = 3;
+    private static final int NO_ERROR = 0;
+    private static final int AREA_TYPE_AND_ISSUE_TYPE_ERROR = 4;
+    public static final String NEW_ISSUE = "newIssue";
     private String mImageUri;
     private SharedPreferences mPreferences;
     private DialogsUtil mDialogsUtil;
@@ -80,21 +92,32 @@ public class AddIssueActivity extends AppCompatActivity
     private String mAnonymousString;
     private ImageUtil mImageUtil;
     private Issue mIssue;
+    private static int temp;
+    private Drawable mAnonymousDrawable;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= 21)
+        {
+            getWindow().setSharedElementEnterTransition(TransitionInflater
+                    .from(this).inflateTransition(R.transition.shared_element_transition));
+        }
         setContentView(R.layout.activity_add_issue);
         ButterKnife.bind(this);
         Otto.register(this);
         mDialogsUtil = new DialogsUtil(this);
+        mImageUtil = new ImageUtil(this);
         mPreferences = WhistleBlower.getPreferences();
         Intent intent = getIntent();
-        if(intent.hasExtra(ISSUE_DATA))
+        mAnonymousString = getString(R.string.anonymous);
+        mAnonymousDrawable = ContextCompat.getDrawable(this, R.mipmap.user_primary_dark_o);
+        if (intent.hasExtra(ISSUE_DATA))
         {
             mIssue = intent.getParcelableExtra(ISSUE_DATA);
+            updateFromIssueObject();
         }
         else
         {
@@ -102,7 +125,6 @@ public class AddIssueActivity extends AppCompatActivity
             mLatLng = intent.getParcelableExtra(MapFragment.LATLNG);
             mRadius = intent.getIntExtra(MapFragment.RADIUS, 100);
         }
-        mImageUtil = new ImageUtil(this);
         mAreaTypeNameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener()
         {
             @Override
@@ -118,76 +140,24 @@ public class AddIssueActivity extends AppCompatActivity
                 }
             }
         });
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        showAreaNameAndTypeDetails();
-        showUserNameAndPic();
-        showDescription();
-        showIssuePic();
-    }
-
-    private void showIssuePic()
-    {
-        if(mIssue !=null)
+        if (mIssue == null)
         {
-            mImageUtil.displayImage(mIssue.imgUrl,mImgPreview,false);
-        }
-    }
-    private void showDescription()
-    {
-        if(mIssue != null)
-        {
-            if(!mIssue.description.trim().isEmpty())
-            {
-                mDescription.setText(mIssue.description);
-            }
-            else
-            {
-                mDescription.setText("");
-            }
+            showAreaNameAndTypeDetails();
+            showUserNameAndPic();
         }
     }
 
-    private boolean isMyServiceRunning()
+    private void updateFromIssueObject()
     {
-        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
+        if (mIssue != null)
         {
-            String LocationUpdateServiceName = getPackageName() + "LocationDetailsService";
+            mLatLng = LocationUtil.getLatLng(mIssue.latitude, mIssue.longitude);
+            mRadius = mIssue.radius;
 
-            if (LocationUpdateServiceName.equals(service.service.getClassName()))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+            mAreaTypeNameEditText.setText(mIssue.areaType);
+            mAddress = getAddress(mIssue.areaType);
+            mPreferences.edit().putInt(ISSUE_TYPE, findIssueType(mIssue.areaType)).apply();
 
-    @Subscribe
-    public void updateUi(String action)
-    {
-        switch (action)
-        {
-            case IssuesDao.ANONYMOUS :
-                showUserNameAndPic();
-                break;
-            case DialogsUtil.ISSUE_TYPE :
-                showAreaNameAndTypeDetails();
-                break;
-        }
-    }
-
-    private void showUserNameAndPic()
-    {
-        mAnonymousString = getString(R.string.anonymous);
-        Drawable mAnonymousDrawable = ContextCompat.getDrawable(this, R.mipmap.user_primary_dark_o);
-
-        if(mIssue != null)
-        {
             if (mIssue.anonymous)
             {
                 mProfilePic.setImageDrawable(mAnonymousDrawable);
@@ -207,47 +177,91 @@ public class AddIssueActivity extends AppCompatActivity
                     mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
                 }
             }
-        }
-        else
-        {
-            if (mPreferences.getBoolean(IssuesDao.ANONYMOUS, false))
+            mImageUri = mIssue.imgUrl;
+            mImageUtil.displayImage(mIssue.imgUrl, mImgPreview, false);
+            if (!mIssue.description.trim().isEmpty())
             {
-                mProfilePic.setImageDrawable(mAnonymousDrawable);
-                mUsername.setText(mAnonymousString);
+                mDescription.setText(mIssue.description);
             }
             else
             {
-                String dpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
-                String userName = mPreferences.getString(Accounts.NAME, mAnonymousString);
-                mUsername.setText(userName);
-                if (dpUrl.trim().isEmpty())
-                {
-                    mProfilePic.setBackground(mAnonymousDrawable);
-                }
-                else
-                {
-                    mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
-                }
+                mDescription.setText("");
+            }
+        }
+    }
+
+    private String getAddress(String mAreaTypeNameText)
+    {
+        return mAreaTypeNameText.substring(1, mAreaTypeNameText.indexOf("#") - 2);
+    }
+
+    private int findIssueType(String str)
+    {
+        Pattern MY_PATTERN = Pattern.compile("#(\\S+)");
+        Matcher mat = MY_PATTERN.matcher(str);
+        while (mat.find())
+        {
+            switch (mat.group(1))
+            {
+                case "Humanity":
+                    return 0;
+                case "AnimalCare":
+                    return 1;
+                case "Environmental":
+                    return 2;
+            }
+        }
+        return -1;
+    }
+
+
+    @Subscribe
+    public void updateUi(String action)
+    {
+        switch (action)
+        {
+            case IssuesDao.ANONYMOUS:
+                showUserNameAndPic();
+                break;
+            case ISSUE_TYPE:
+                showAreaNameAndTypeDetails();
+                break;
+        }
+    }
+
+    private void showUserNameAndPic()
+    {
+        if (mPreferences.getBoolean(IssuesDao.ANONYMOUS, false))
+        {
+            mProfilePic.setImageDrawable(mAnonymousDrawable);
+            mUsername.setText(mAnonymousString);
+        }
+        else
+        {
+            String dpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
+            String userName = mPreferences.getString(Accounts.NAME, mAnonymousString);
+            mUsername.setText(userName);
+            if (dpUrl.trim().isEmpty())
+            {
+                mProfilePic.setBackground(mAnonymousDrawable);
+            }
+            else
+            {
+                mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
             }
         }
     }
 
     private void showAreaNameAndTypeDetails()
     {
-        if(mIssue != null)
-        {
-            mAreaTypeNameEditText.setText(mIssue.areaType);
-        }
-        else
-        {
-            String placeTypeNameText = "@" + mAddress;
-            String temp = mDialogsUtil.getSelectedIssueType();
-            placeTypeNameText += ",\n" + temp;
-            mAreaTypeNameEditText.setText(placeTypeNameText);
-        }
+        String placeTypeNameText = "@" + mAddress;
+        String temp = mDialogsUtil.getSelectedIssueType();
+        placeTypeNameText += ",\n" + temp;
+        mAreaTypeNameEditText.setText(placeTypeNameText);
+
     }
 
-    @OnClick({R.id.zone,R.id.anonymous,R.id.camera,R.id.gallery,R.id.postIssue})
+    @OnClick({R.id.zone, R.id.anonymous, R.id.camera, R.id.gallery})
     public void onClick(View v)
     {
         int id = v.getId();
@@ -263,54 +277,78 @@ public class AddIssueActivity extends AppCompatActivity
                 mImageUtil.getImage(this, false);
                 break;
             case R.id.gallery:
-                mImageUtil.getImage(this,true);
+                mImageUtil.getImage(this, true);
                 break;
             case R.id.editIcon:
                 mAreaTypeNameEditText.requestFocus();
                 break;
-            case R.id.postIssue:
-                addIssue();
-                break;
         }
     }
 
-    private void addIssue()
+    @SuppressWarnings({"WeakerAccess", "unused"})
+    @OnClick({R.id.postIssue, R.id.postIssueTop})
+    public void addIssue()
     {
-        if (mImageUri != null && (mImageUri.contains(".png")||mImageUri.contains(".jpg")))
+        switch (isIssueCategoryCheck())
         {
-            Intent intent = new Intent(this, AddIssueService.class);
-            Issue issue = new Issue();
-            issue.anonymous = mPreferences.getBoolean(ANONYMOUS, false);
-            issue.areaType = mAreaTypeNameEditText.getText().toString();
-            issue.description = mDescription.getText().toString();
-            issue.imgUrl = mImageUri;
-            issue.latitude = mLatLng.latitude + "";
-            issue.longitude = mLatLng.longitude + "";
-            issue.radius = mRadius;
-            issue.userDpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
-            issue.username = mPreferences.getString(Accounts.NAME, mAnonymousString);
-            issue.userId = mPreferences.getString(Accounts.GOOGLE_ID, "");
-            if (issue.anonymous)
-            {
-                issue.userDpUrl = "";
-                issue.username = mAnonymousString;
-            }
+            case IMAGE_ERROR:
+                toast(getString(R.string.pleaseUploadImage));
+                break;
+            case AREA_TYPE_ERROR:
+                toast(getString(R.string.pleaseEnterAddress));
+                break;
+            case ISSUE_TYPE_ERROR:
+                toast(getString(R.string.pleaseEnterIssueType));
+                break;
+            default:
+                if (ConnectivityUtil.isConnected(this))
+                {
+                    submitIssue();
+                }
+                else
+                {
+                    toast(getString(R.string.noInternet));
+                }
+                break;
+        }
 
-            intent.putExtra(ISSUE_DATA, issue);
-            startService(intent);
-            intent = new Intent(AddIssueActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-        else
+    }
+
+    private void submitIssue()
+    {
+        Intent intent = new Intent(this, AddIssueService.class);
+        if (mIssue == null)
         {
-            Toast.makeText(this, "Please Upload An Image!", Toast.LENGTH_SHORT).show();
+            mIssue = new Issue();
+            mIssue.issueId = NEW_ISSUE;
         }
+        mIssue.anonymous = mPreferences.getBoolean(ANONYMOUS, false);
+        mIssue.areaType = mAreaTypeNameEditText.getText().toString();
+        mIssue.description = mDescription.getText().toString();
+        mIssue.imgUrl = mImageUri;
+        mIssue.latitude = mLatLng.latitude + "";
+        mIssue.longitude = mLatLng.longitude + "";
+        mIssue.radius = mRadius;
+        mIssue.userDpUrl = mPreferences.getString(Accounts.PHOTO_URL, "");
+        mIssue.username = mPreferences.getString(Accounts.NAME, mAnonymousString);
+        mIssue.userId = mPreferences.getString(Accounts.GOOGLE_ID, "");
+
+        if (mIssue.anonymous)
+        {
+            mIssue.userDpUrl = "";
+            mIssue.username = mAnonymousString;
+        }
+
+        intent.putExtra(ISSUE_DATA, mIssue);
+        startService(intent);
+        intent = new Intent(AddIssueActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private void beginCrop(Uri source)
     {
-        Uri destination = Uri.fromFile(new File(mImageUtil.getMediaStorageDir(), "temp.png"));
+        Uri destination = Uri.fromFile(new File(mImageUtil.getMediaStorageDir(), "temp" + (temp++) + ".png"));
         Crop.of(source, destination).asSquare().start(this);
     }
 
@@ -321,11 +359,10 @@ public class AddIssueActivity extends AppCompatActivity
             Uri imgUri = Crop.getOutput(result);
             mImgPreview.setImageURI(imgUri);
             mImageUri = imgUri.getPath();
-            Toast.makeText(this, mImageUri, Toast.LENGTH_SHORT).show();
         }
         else if (resultCode == Crop.RESULT_ERROR)
         {
-            Toast.makeText(this, Crop.getError(result).getMessage(), Toast.LENGTH_SHORT).show();
+            toast(Crop.getError(result).getMessage());
         }
     }
 
@@ -343,7 +380,7 @@ public class AddIssueActivity extends AppCompatActivity
                     case Activity.RESULT_CANCELED:
                         break;
                     default:
-                        Toast.makeText(this, "Please Try Again!", Toast.LENGTH_SHORT).show();
+                        toast(getString(R.string.please_try_again));
                         break;
                 }
                 break;
@@ -376,7 +413,7 @@ public class AddIssueActivity extends AppCompatActivity
                         Bitmap mImage = getCompressedImageFile(mImageUri);
                         if (mImage == null)
                         {
-                            Toast.makeText(this, "Please Try Again!", Toast.LENGTH_SHORT).show();
+                            toast(getString(R.string.please_try_again));
                         }
                         else
                         {
@@ -511,5 +548,31 @@ public class AddIssueActivity extends AppCompatActivity
     {
         super.onDestroy();
         Otto.unregister(this);
+    }
+
+    private int isIssueCategoryCheck()
+    {
+        String areaAndIssueType = mAreaTypeNameEditText.getText().toString().trim();
+        if (mImageUri == null || mImageUri.isEmpty())
+        {
+            return IMAGE_ERROR;
+        }
+        else if ((!mImageUri.contains(".png") && !mImageUri.contains(".jpg")))
+        {
+            return IMAGE_ERROR;
+        }
+        else if (areaAndIssueType.isEmpty())
+        {
+            return AREA_TYPE_AND_ISSUE_TYPE_ERROR;
+        }
+        else if (!areaAndIssueType.contains("@"))
+        {
+            return AREA_TYPE_ERROR;
+        }
+        else if (!areaAndIssueType.contains("#"))
+        {
+            return ISSUE_TYPE_ERROR;
+        }
+        return NO_ERROR;
     }
 }

@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,7 @@ import co.thnki.whistleblower.singletons.Otto;
 import co.thnki.whistleblower.utils.LocationUtil;
 import co.thnki.whistleblower.utils.TransitionUtil;
 
+import static co.thnki.whistleblower.services.NewsFeedsUpdateService.ISSUES_FEEDS_UPDATED;
 import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.COLLAPSED;
 import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.EXPANDED;
 
@@ -119,11 +121,18 @@ public class MainActivity extends AppCompatActivity
      */
 
     IssueAdapter mIssueAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d("LagIssue", "onCreate  : MainActivity");
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= 21)
+        {
+            getWindow().setSharedElementExitTransition(TransitionInflater
+                    .from(this).inflateTransition(R.transition.shared_element_transition));
+        }
+
         setContentView(R.layout.activity_main_sliding_up);
         mPreferences = WhistleBlower.getPreferences();
         ButterKnife.bind(this);
@@ -147,6 +156,10 @@ public class MainActivity extends AppCompatActivity
     private void initializeIssueList()
     {
         ArrayList<Issue> issuesList = IssuesDao.getList();
+        for (Issue i : issuesList)
+        {
+            Log.d("imgUrl", i.imgUrl);
+        }
         if (issuesList.size() < 1)
         {
             showEmptyListString();
@@ -252,6 +265,18 @@ public class MainActivity extends AppCompatActivity
         {
             case InternetConnectivityListener.INTERNET_CONNECTED:
                 break;
+            case ISSUES_FEEDS_UPDATED:
+                mIssueAdapter.mIssuesArrayList = IssuesDao.getList();
+                if (mIssueAdapter.mIssuesArrayList.size() < 1)
+                {
+                    showEmptyListString();
+                }
+                else
+                {
+                    hideEmptyListString();
+                }
+                mIssueAdapter.notifyDataSetChanged();
+                break;
         }
     }
 
@@ -306,7 +331,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState)
             {
-                //Log.i(TAG, "onPanelStateChanged " + newState);
                 mSlidingToolbarState = newState;
                 if (newState == COLLAPSED)
                 {

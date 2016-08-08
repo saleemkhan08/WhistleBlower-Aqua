@@ -3,9 +3,12 @@ package co.thnki.whistleblower.adapters;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +35,7 @@ import co.thnki.whistleblower.interfaces.ResultListener;
 import co.thnki.whistleblower.pojos.Accounts;
 import co.thnki.whistleblower.pojos.Issue;
 import co.thnki.whistleblower.singletons.Otto;
+import co.thnki.whistleblower.utils.ConnectivityUtil;
 import co.thnki.whistleblower.utils.ImageUtil;
 import co.thnki.whistleblower.utils.VolleyUtil;
 
@@ -41,8 +45,8 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
 {
     LayoutInflater mInflater;
     AppCompatActivity mActivity;
-    ArrayList<Issue> mIssuesArrayList;
-    ImageUtil mImageUtil;
+    public ArrayList<Issue> mIssuesArrayList;
+    public ImageUtil mImageUtil;
 
     SharedPreferences preferences;
     private ProgressDialog mProgressDialog;
@@ -64,20 +68,12 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
     }
 
     @Override
-    public void onBindViewHolder(IssueViewHolder holder, final int position)
+    public void onBindViewHolder(final IssueViewHolder holder, final int position)
     {
         final Issue issue = mIssuesArrayList.get(position);
 
         holder.areaTypeName.setText(issue.areaType);
         holder.username.setText(issue.username);
-        if(issue.description.trim().equals(""))
-        {
-            holder.issueDescription.setVisibility(View.GONE);
-        }else
-        {
-            holder.issueDescription.setText(issue.description);
-        }
-
         holder.locationContainer.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -92,12 +88,18 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View v)
             {
-                Intent share = new Intent(Intent.ACTION_SEND);
-                share.setType("text/plain");
-                share.putExtra(Intent.EXTRA_SUBJECT, "Title Of The Post");
-                share.putExtra(Intent.EXTRA_TEXT, "whistleblower-thnkin.rhcloud.com/issue.php?issueId="+issue.issueId);
-                mActivity.startActivity(Intent.createChooser(share, "Share link!"));
-
+                if (ConnectivityUtil.isConnected(mActivity))
+                {
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("text/plain");
+                    share.putExtra(Intent.EXTRA_SUBJECT, mActivity.getString(R.string.app_name));
+                    share.putExtra(Intent.EXTRA_TEXT, "whistleblower-thnkin.rhcloud.com/issue.php?issueId=" + issue.issueId);
+                    mActivity.startActivity(Intent.createChooser(share, "Share link!"));
+                }
+                else
+                {
+                    toast(mActivity.getString(R.string.noInternet));
+                }
             }
         });
 
@@ -106,7 +108,14 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             @Override
             public void onClick(View v)
             {
-                toast("Volunteer : " + position);
+                if (ConnectivityUtil.isConnected(mActivity))
+                {
+                    toast("Volunteer : " + position);
+                }
+                else
+                {
+                    toast(mActivity.getString(R.string.noInternet));
+                }
             }
         });
 
@@ -136,18 +145,25 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
                 {
                     public boolean onMenuItemClick(MenuItem item)
                     {
-                        switch (item.getItemId())
+                        if (ConnectivityUtil.isConnected(mActivity))
                         {
-                            case R.id.editIssue:
-                                editIssue(issue);
-                                break;
-                            case R.id.deleteIssue:
-                                deleteIssue(issue.issueId, position);
-                                break;
-                            case R.id.reportIssue:
-                                reportIssue(issue.issueId);
-                                break;
+                            switch (item.getItemId())
+                            {
+                                case R.id.editIssue:
+                                    editIssue(issue, holder.issueImage);
+                                    break;
+                                case R.id.deleteIssue:
+                                    deleteIssue(issue.issueId, position);
+                                    break;
+                                case R.id.reportIssue:
+                                    reportIssue(issue.issueId);
+                                    break;
 
+                            }
+                        }
+                        else
+                        {
+                            toast(mActivity.getString(R.string.noInternet));
                         }
                         return true;
                     }
@@ -156,7 +172,11 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             }
         });
 
+        Log.d("imgUrl", issue.imgUrl);
         mImageUtil.displayImage(issue.imgUrl, holder.issueImage, false);
+        /*GlideDrawableImageViewTarget imageViewTarget = new GlideDrawableImageViewTarget(holder.issueImage);
+        Glide.with(mActivity).load(R.raw.loading).into(imageViewTarget);*/
+
         String dpUrl = issue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
@@ -170,11 +190,22 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         holder.issueImage.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View arg0)
+            public void onClick(View view)
             {
                 Intent intent = new Intent(mActivity, IssueActivity.class);
                 intent.putExtra(IssuesDao.ISSUE_ID, issue);
-                mActivity.startActivity(intent);
+
+                if (Build.VERSION.SDK_INT >= 21)
+                {
+                    view.setTransitionName(mActivity.getString(R.string.sharedElement1));
+                    ActivityOptionsCompat optionsCompat = ActivityOptionsCompat
+                            .makeSceneTransitionAnimation(mActivity, view, view.getTransitionName());
+                    mActivity.startActivity(intent, optionsCompat.toBundle());
+                }
+                else
+                {
+                    mActivity.startActivity(intent);
+                }
             }
         });
     }
@@ -198,7 +229,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             public void onError(VolleyError error)
             {
                 hideProgressDialog();
-                Toast.makeText(mActivity, "Please Try Again"+"\n"+error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "Please Try Again" + "\n" + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -216,7 +247,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             {
                 hideProgressDialog();
                 Toast.makeText(mActivity, result, Toast.LENGTH_SHORT).show();
-                if(result.equals("Deleted"))
+                if (result.equals("Deleted"))
                 {
                     removeAt(position);
                     IssuesDao.delete(issueId);
@@ -227,7 +258,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             public void onError(VolleyError error)
             {
                 hideProgressDialog();
-                Toast.makeText(mActivity, "Please Try Again"+"\n"+error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "Please Try Again" + "\n" + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -239,11 +270,22 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         notifyItemRangeChanged(position, mIssuesArrayList.size());
     }
 
-    private void editIssue(Issue issue)
+    private void editIssue(Issue issue, View view)
     {
         Intent intent = new Intent(mActivity, AddIssueActivity.class);
         intent.putExtra(AddIssueActivity.ISSUE_DATA, issue);
-        mActivity.startActivity(intent);
+
+        if (Build.VERSION.SDK_INT >= 21)
+        {
+            view.setTransitionName(mActivity.getString(R.string.sharedElement1));
+            ActivityOptionsCompat optionsCompat = ActivityOptionsCompat
+                    .makeSceneTransitionAnimation(mActivity, view, view.getTransitionName());
+            mActivity.startActivity(intent, optionsCompat.toBundle());
+        }
+        else
+        {
+            mActivity.startActivity(intent);
+        }
     }
 
     @Override
@@ -258,9 +300,6 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         TextView areaTypeName;
         @Bind(R.id.username)
         TextView username;
-        @Bind(R.id.issueDescription)
-        TextView issueDescription;
-
         @Bind(R.id.issueImage)
         ImageView issueImage;
         @Bind(R.id.profilePic)

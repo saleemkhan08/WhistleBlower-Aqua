@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import butterknife.Bind;
@@ -28,7 +29,7 @@ public class SettingsFragment extends DialogFragment
     private SharedPreferences mPreference;
 
     @Bind(R.id.mapTypeExpandList)
-    View mMapTypeExpandList;
+    LinearLayout mMapTypeExpandList;
 
     @Bind(R.id.mapTypeValue)
     TextView mMapTypeValue;

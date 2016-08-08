@@ -5,18 +5,19 @@ import android.os.Parcelable;
 
 public class Issue implements Parcelable
 {
-    public String description,
-            placeName,
-            imgUrl,
-            username,
-            userDpUrl,
-            userId,
-            areaType,
-            issueId,
-            status;
+    public String description;
+    public String imgUrl;
+    public String username;
+    public String userDpUrl;
+    public String userId;
+    public String areaType;
+    public String issueId;
+    public String status;
     public int radius;
     public boolean anonymous;
-    public String longitude, latitude;
+    public String longitude;
+    public String latitude;
+    public String photoId;
 
     @Override
     public int describeContents()
@@ -28,7 +29,7 @@ public class Issue implements Parcelable
     public void writeToParcel(Parcel dest, int flags)
     {
         dest.writeString(this.description);
-        dest.writeString(this.placeName);
+        dest.writeString(this.photoId);
         dest.writeString(this.imgUrl);
         dest.writeString(this.username);
         dest.writeString(this.userDpUrl);
@@ -49,7 +50,7 @@ public class Issue implements Parcelable
     protected Issue(Parcel in)
     {
         this.description = in.readString();
-        this.placeName = in.readString();
+        this.photoId = in.readString();
         this.imgUrl = in.readString();
         this.username = in.readString();
         this.userDpUrl = in.readString();

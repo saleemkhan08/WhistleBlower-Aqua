@@ -49,8 +49,10 @@ import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import co.thnki.whistleblower.AddIssueActivity;
+import co.thnki.whistleblower.IssueActivity;
 import co.thnki.whistleblower.R;
 import co.thnki.whistleblower.WhistleBlower;
+import co.thnki.whistleblower.doas.IssuesDao;
 import co.thnki.whistleblower.interfaces.GeoCodeListener;
 import co.thnki.whistleblower.pojos.Issue;
 import co.thnki.whistleblower.receivers.InternetConnectivityListener;
@@ -64,12 +66,13 @@ import co.thnki.whistleblower.utils.PermissionUtil;
 import co.thnki.whistleblower.utils.TransitionUtil;
 import co.thnki.whistleblower.view.TouchableWrapper;
 
+import static co.thnki.whistleblower.AddIssueActivity.ISSUE_DATA;
 import static co.thnki.whistleblower.utils.LocationUtil.distFrom;
 
 public class MapFragment extends SupportMapFragment implements
         TouchableWrapper.OnMapTouchListener,
         GeoCodeListener,
-        GoogleMap.OnCameraChangeListener, OnMapReadyCallback
+        GoogleMap.OnCameraChangeListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener
 {
     public static final String DIALOG_DISMISS = "dialogDismiss";
     public static final String TURN_OFF_TRAVEL_MODE = "turnOffTravelMode";
@@ -228,6 +231,7 @@ public class MapFragment extends SupportMapFragment implements
     public void onMapReady(GoogleMap googleMap)
     {
         mGoogleMap = googleMap;
+        mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         mMarkerAndCircle = new MarkerAndCirclesUtil(mGoogleMap, accentColor, radiusColor);
         if (PermissionUtil.isLocationPermissionAvailable())
@@ -1106,5 +1110,23 @@ public class MapFragment extends SupportMapFragment implements
     private boolean getTravelMode()
     {
         return mPreferences.getBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+    {
+        String id = mMarkerAndCircle.getId(marker.getId());
+        if(id != null)
+        {
+            Issue issue =  IssuesDao.getIssue(id);
+            if(issue != null)
+            {
+                Intent intent = new Intent(mActivity, IssueActivity.class);
+                intent.putExtra(ISSUE_DATA,issue);
+                mActivity.startActivity(intent);
+                return true;
+            }
+        }
+        return false;
     }
 }

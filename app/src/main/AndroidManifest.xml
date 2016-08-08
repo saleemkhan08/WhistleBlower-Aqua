@@ -36,17 +36,6 @@
         </activity>
 
         <service
-            android:name=".services.UploadIssueService"
-            android:exported="false">
-        </service>
-
-        <receiver
-            android:name=".receivers.StopRetryReceiver"
-            android:enabled="true"
-            android:exported="true">
-        </receiver>
-
-        <service
             android:name=".services.AddIssueService"
             android:enabled="true"
             android:exported="true">

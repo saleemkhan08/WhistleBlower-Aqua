@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import co.thnki.whistleblower.MainActivity;
 import co.thnki.whistleblower.R;
 import co.thnki.whistleblower.WhistleBlower;
 import co.thnki.whistleblower.doas.IssuesDao;
@@ -39,6 +38,7 @@ public class MarkerAndCirclesUtil
     private Map<String, Marker> imgMarkerMap;
     private Map<String, Marker> bgMarkerMap;
     private int mAccentColor, mRadiusColor;
+    public Map<String, String> mIssueMarkerMap;
 
     public MarkerAndCirclesUtil(GoogleMap googleMap, int accentColor, int radiusColor)
     {
@@ -51,11 +51,9 @@ public class MarkerAndCirclesUtil
         circleMap = new HashMap<>();
         imgMarkerMap = new HashMap<>();
         bgMarkerMap = new HashMap<>();
-
+        mIssueMarkerMap = new HashMap<>();
         mGoogleMap.clear();
         new MarkerAndCircleAddingTask().execute();
-
-        Log.d(MainActivity.TAG, "new - MarkerAndCirclesUtil");
     }
 
     private class MarkerAndCircleAddingTask extends AsyncTask<Void, Void, Void>
@@ -64,7 +62,7 @@ public class MarkerAndCirclesUtil
         protected Void doInBackground(Void... params)
         {
             getIssueMarkers();
-            
+
             return null;
         }
 
@@ -74,7 +72,10 @@ public class MarkerAndCirclesUtil
             for (String key : mMarkerAndCircleMap.keySet())
             {
                 MarkerAndCircle markerAndCircle = mMarkerAndCircleMap.get(key);
-                addMarkerAndCircle(markerAndCircle);
+                String ids[] = addMarkerAndCircle(markerAndCircle);
+                mIssueMarkerMap.put(ids[0], markerAndCircle.id);
+                mIssueMarkerMap.put(ids[1], markerAndCircle.id);
+                mIssueMarkerMap.put(ids[2], markerAndCircle.id);
             }
         }
     }
@@ -82,39 +83,50 @@ public class MarkerAndCirclesUtil
     private void getIssueMarkers()
     {
         List<Issue> issues = IssuesDao.getList();
-        for(Issue issue: issues)
+        for (Issue issue : issues)
         {
-           mMarkerAndCircleMap.put(issue.issueId, getMarkerAndCircle(issue));
+            mMarkerAndCircleMap.put(issue.issueId, getMarkerAndCircle(issue));
         }
     }
 
-    private void addMarkerAndCircle(MarkerAndCircle markerAndCircle)
+    private String[] addMarkerAndCircle(MarkerAndCircle markerAndCircle)
     {
+        String[] ids = new String[3];
         if (circleMap.containsKey(markerAndCircle.id))
         {
             removeMarkerAndCircle(markerAndCircle.id);
         }
 
-        circleMap.put(markerAndCircle.id, mGoogleMap.addCircle(new CircleOptions()
+        Circle circle = mGoogleMap.addCircle(new CircleOptions()
                 .radius(markerAndCircle.radius)
                 .strokeWidth(2)
                 .strokeColor(mAccentColor)
                 .fillColor(mRadiusColor)
-                .center(markerAndCircle.latLng)));
+                .center(markerAndCircle.latLng));
+        circleMap.put(markerAndCircle.id, circle);
+        ids[0] = circle.getId();
 
-        bgMarkerMap.put(markerAndCircle.id, mGoogleMap.addMarker(new MarkerOptions()
+        Marker bgMarker = mGoogleMap.addMarker(new MarkerOptions()
                 .position(markerAndCircle.latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
-                .icon(getMapMarker(WhistleBlower.getAppContext(), R.mipmap.marker_bg, 40))));
+                .icon(getMapMarker(WhistleBlower.getAppContext(), R.mipmap.marker_bg, 40)));
 
-        imgMarkerMap.put(markerAndCircle.id, mGoogleMap.addMarker(new MarkerOptions()
+        ids[1] = bgMarker.getId();
+
+        bgMarkerMap.put(markerAndCircle.id, bgMarker);
+
+        Marker marker = mGoogleMap.addMarker(new MarkerOptions()
                 .position(markerAndCircle.latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
-                .icon(getMapMarker(WhistleBlower.getAppContext(), getDrawableResId(markerAndCircle.type), 20))));
+                .icon(getMapMarker(WhistleBlower.getAppContext(), getDrawableResId(markerAndCircle.type), 20)));
+
+        imgMarkerMap.put(markerAndCircle.id, marker);
 
         mMarkerAndCircleMap.put(markerAndCircle.id, markerAndCircle);
+        ids[2] = marker.getId();
+        return ids;
     }
 
     private static BitmapDescriptor getMapMarker(Context context, int resourceId, double size)
@@ -171,7 +183,7 @@ public class MarkerAndCirclesUtil
         mMarkerAndCircleMap.remove(id);
     }
 
-private MarkerAndCircle getMarkerAndCircle(Issue issue)
+    private MarkerAndCircle getMarkerAndCircle(Issue issue)
     {
         MarkerAndCircle markerAndCircle = new MarkerAndCircle();
         markerAndCircle.id = issue.issueId;
@@ -180,17 +192,20 @@ private MarkerAndCircle getMarkerAndCircle(Issue issue)
         markerAndCircle.type = TYPE_ISSUE;
         return markerAndCircle;
     }
-	
+
     public void unregister()
     {
         Otto.unregister(this);
     }
 
-public void addMarkerAndCircle(Issue issue)
+    public void addMarkerAndCircle(Issue issue)
     {
-        addMarkerAndCircle(getMarkerAndCircle(issue));
+        String ids[] = addMarkerAndCircle(getMarkerAndCircle(issue));
+        mIssueMarkerMap.put(ids[0], issue.issueId);
+        mIssueMarkerMap.put(ids[1], issue.issueId);
+        mIssueMarkerMap.put(ids[2], issue.issueId);
     }
-	
+
     private static int getDrawableResId(int index)
     {
         switch (index)
@@ -205,5 +220,10 @@ public void addMarkerAndCircle(Issue issue)
     private static LatLng getLatLng(String lat, String lng)
     {
         return new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+    }
+
+    public String getId(String id)
+    {
+        return mIssueMarkerMap.get(id);
     }
 }

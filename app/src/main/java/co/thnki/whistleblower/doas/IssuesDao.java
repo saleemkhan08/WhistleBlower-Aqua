@@ -33,8 +33,10 @@ public class IssuesDao
 
     public static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE;
     public static final String SPAM = "SPAM";
+    public static final String PHOTO_ID = "photoId";
     public static final String TABLE_SCHEMA = "CREATE TABLE " + TABLE + "("
             + ISSUE_ID + " VARCHAR(255) PRIMARY KEY, "
+            + PHOTO_ID + " VARCHAR(255), "
             + NO_OF_IMAGES + " INTEGER, "
             + USER_ID + " VARCHAR(255), "
             + USER_DP_URL + " VARCHAR(255), "
@@ -55,6 +57,7 @@ public class IssuesDao
         ContentValues values = new ContentValues();
         values.put(IssuesDao.ISSUE_ID, issue.issueId);
         values.put(IssuesDao.NO_OF_IMAGES, 1);
+        values.put(IssuesDao.PHOTO_ID, issue.photoId);
         values.put(IssuesDao.USER_ID, issue.userId);
         values.put(IssuesDao.USER_DP_URL, issue.userDpUrl);
         values.put(IssuesDao.USERNAME, issue.username);
@@ -90,7 +93,8 @@ public class IssuesDao
             {
                 Issue issue = new Issue();
                 issue.issueId = cursor.getString(cursor.getColumnIndex(IssuesDao.ISSUE_ID));
-                issue.imgUrl = VolleyUtil.IMAGE_URL + issue.issueId + ".png";
+                issue.photoId = cursor.getString(cursor.getColumnIndex(IssuesDao.PHOTO_ID));
+                issue.imgUrl = VolleyUtil.IMAGE_URL + issue.photoId + ".png";
                 issue.userId = cursor.getString(cursor.getColumnIndex(IssuesDao.USER_ID));
                 issue.userDpUrl = cursor.getString(cursor.getColumnIndex(IssuesDao.USER_DP_URL));
                 issue.username = cursor.getString(cursor.getColumnIndex(IssuesDao.USERNAME));
@@ -110,10 +114,11 @@ public class IssuesDao
     public static boolean issueExist(String id)
     {
         WBDataBase mWBDataBase = new WBDataBase();
-        Cursor cursor = mWBDataBase.query(IssuesDao.TABLE, new String[]{ISSUE_ID}, ISSUE_ID +" = ?", new String[]{id},null, null);
+        Cursor cursor = mWBDataBase.query(IssuesDao.TABLE, new String[]{ISSUE_ID}, ISSUE_ID + " = ?", new String[]{id}, null, null);
         if (null != cursor)
         {
-            if(cursor.getCount() <= 0){
+            if (cursor.getCount() <= 0)
+            {
                 cursor.close();
                 return false;
             }
@@ -121,5 +126,37 @@ public class IssuesDao
         }
         mWBDataBase.closeDb();
         return true;
+    }
+
+    public static Issue getIssue(String id)
+    {
+        WBDataBase mWBDataBase = new WBDataBase();
+        Cursor cursor = mWBDataBase.query(IssuesDao.TABLE, null, ISSUE_ID + " = ?", new String[]{id}, null, null);
+        Log.d("getSingleRow", "" + cursor);
+        if (null != cursor)
+        {
+            Log.d("getSingleRow", "" + cursor.getCount());
+            if (cursor.getCount() > 0)
+            {
+                Issue issue = new Issue();
+                cursor.moveToFirst();
+                Log.d("getSingleRow", "issue : " + cursor.getString(cursor.getColumnIndex(IssuesDao.ISSUE_ID)));
+                issue.issueId = cursor.getString(cursor.getColumnIndex(IssuesDao.ISSUE_ID));
+                issue.photoId = cursor.getString(cursor.getColumnIndex(IssuesDao.PHOTO_ID));
+                issue.imgUrl = VolleyUtil.IMAGE_URL + issue.photoId + ".png";
+                issue.userId = cursor.getString(cursor.getColumnIndex(IssuesDao.USER_ID));
+                issue.userDpUrl = cursor.getString(cursor.getColumnIndex(IssuesDao.USER_DP_URL));
+                issue.username = cursor.getString(cursor.getColumnIndex(IssuesDao.USERNAME));
+                issue.description = cursor.getString(cursor.getColumnIndex(IssuesDao.DESCRIPTION));
+                issue.areaType = cursor.getString(cursor.getColumnIndex(IssuesDao.AREA_TYPE));
+                issue.radius = cursor.getInt(cursor.getColumnIndex(IssuesDao.RADIUS));
+                issue.latitude = cursor.getString(cursor.getColumnIndex(IssuesDao.LATITUDE));
+                issue.longitude = cursor.getString(cursor.getColumnIndex(IssuesDao.LONGITUDE));
+                return issue;
+            }
+            cursor.close();
+        }
+        mWBDataBase.closeDb();
+        return null;
     }
 }

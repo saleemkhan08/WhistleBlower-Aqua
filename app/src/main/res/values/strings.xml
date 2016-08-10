@@ -76,6 +76,29 @@
     <string name="image_permission_denial">Image can\'t be added without this Permission</string>
     <string name="sharedElement1">sharedElement1</string>
     <string name="sharedElement2">sharedElement2</string>
+    <string name="suggestNgo">SUGGEST AN NGO</string>
+    <string name="suggestSolution">Suggest a solution</string>
+    <string name="volunteer">Volunteer</string>
+    <string name="or">Or</string>
+    <string name="ngo_name">NGO Name</string>
+    <string name="address">Address</string>
+    <string name="emailId">Email ID</string>
+    <string name="phoneNo">Phone No.</string>
+    <string name="save">Save</string>
+    <string name="website_url">Website URL</string>
+    <string name="reported">Reported</string>
+    <string name="deleted">Deleted…</string>
+    <string name="couldntDelete">Couldn\'t Delete</string>
+    <string name="saved">Saved</string>
+    <string name="posted">Posted</string>
+    <string name="sampleComment">This is a sample comment to test the layout</string>
+    <string name="sampleLink">http://sample.link.com</string>
+    <string name="commentCannontBeEmpty">Comment Cannot Be Empty</string>
+    <string name="ngoNameCannotBeEmpty">NGO name cannot be empty</string>
+    <string name="comment">Comment</string>
+    <string name="pleaseEnterTheComment">Please Enter The Comment</string>
+    <string name="pleaseEnterNgoName">Please Enter NGO Name</string>
+    <string name="pleaseEnterNgoUrl">Please Enter A Valid Website URL</string>
     <string-array name="issue_types">
         <item>#Humanity</item>
         <item>#AnimalCare</item>

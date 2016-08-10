@@ -132,11 +132,16 @@
             android:name=".services.NewsFeedsUpdateService"
             android:exported="false">
         </service>
+
         <activity
             android:name=".IssueActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-            />
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <service
+            android:name=".services.VolleyService"
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

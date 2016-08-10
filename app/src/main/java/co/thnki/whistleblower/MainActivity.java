@@ -38,13 +38,19 @@ import butterknife.ButterKnife;
 import co.thnki.whistleblower.adapters.IssueAdapter;
 import co.thnki.whistleblower.doas.IssuesDao;
 import co.thnki.whistleblower.fragments.MapFragment;
+import co.thnki.whistleblower.fragments.VolunteerFragment;
 import co.thnki.whistleblower.pojos.Issue;
+import co.thnki.whistleblower.pojos.VolleyResponse;
 import co.thnki.whistleblower.receivers.InternetConnectivityListener;
 import co.thnki.whistleblower.services.RemoteConfigService;
 import co.thnki.whistleblower.singletons.Otto;
 import co.thnki.whistleblower.utils.LocationUtil;
 import co.thnki.whistleblower.utils.TransitionUtil;
 
+import static co.thnki.whistleblower.IssueActivity.VOLUNTEER_FRAGMENT_TAG;
+import static co.thnki.whistleblower.WhistleBlower.toast;
+import static co.thnki.whistleblower.fragments.VolunteerFragment.VOLUNTEER_REQUEST_COMMENT;
+import static co.thnki.whistleblower.fragments.VolunteerFragment.VOLUNTEER_REQUEST_NGO;
 import static co.thnki.whistleblower.services.NewsFeedsUpdateService.ISSUES_FEEDS_UPDATED;
 import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.COLLAPSED;
 import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.EXPANDED;
@@ -57,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     private static final String GET_ISSUES = "getIssues";
     private static final String LIMIT = "limit";
     private static final String OFFSET = "offset";
+
 
     @Bind(R.id.sliding_layout)
     SlidingUpPanelLayout mLayout;
@@ -121,6 +128,8 @@ public class MainActivity extends AppCompatActivity
      */
 
     IssueAdapter mIssueAdapter;
+    private VolunteerFragment mVolunteerFragment;
+    private FragmentManager mFragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -135,6 +144,7 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main_sliding_up);
         mPreferences = WhistleBlower.getPreferences();
+        mFragmentManager = getSupportFragmentManager();
         ButterKnife.bind(this);
         Otto.register(this);
         setUpSlidingToolbar();
@@ -172,7 +182,13 @@ public class MainActivity extends AppCompatActivity
         mIssueAdapter = new IssueAdapter(this, issuesList);
         mIssuesRecyclerView.setAdapter(mIssueAdapter);
         mIssuesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        //mIssueAdapter.updateList(mAlarmList);
+
+        mVolunteerFragment = (VolunteerFragment) mFragmentManager.findFragmentByTag(VOLUNTEER_FRAGMENT_TAG);
+        if (mVolunteerFragment == null)
+        {
+            mVolunteerFragment = new VolunteerFragment();
+        }
+        mIssueAdapter.setVolunteerFragment(mVolunteerFragment);
     }
 
     private void loadEmptyListAd()
@@ -197,8 +213,7 @@ public class MainActivity extends AppCompatActivity
 
     private void initializeAppBarLayout()
     {
-        FragmentManager manager = getSupportFragmentManager();
-        addMapFragment(manager);
+        addMapFragment();
         TextView title = (TextView) findViewById(R.id.titleText);
         title.setTypeface(WhistleBlower.getTypeFace());
     }
@@ -208,11 +223,11 @@ public class MainActivity extends AppCompatActivity
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
-    private void addMapFragment(FragmentManager manager)
+    private void addMapFragment()
     {
         Log.d("LagIssue", "addMapFragment  : MainActivity");
         mMapFragment = new MapFragment();
-        manager.beginTransaction()
+        mFragmentManager.beginTransaction()
                 .replace(R.id.mapContainer, mMapFragment, MAP_FRAGMENT)
                 .commit();
     }
@@ -220,7 +235,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed()
     {
-        if (mSlidingToolbarState == EXPANDED)
+        if (mVolunteerFragment.mIsNgoSuggestionExpanded)
+        {
+            mVolunteerFragment.hideSuggestNgoContainer();
+        }
+        else if (mSlidingToolbarState == EXPANDED)
         {
             mLayout.setPanelState(COLLAPSED);
         }
@@ -346,5 +365,26 @@ public class MainActivity extends AppCompatActivity
                 mLayout.setPanelState(COLLAPSED);
             }
         });
+
+    }
+
+    @Subscribe
+    public void volleyResponse(VolleyResponse response)
+    {
+        switch (response.mRequestCode)
+        {
+            case VOLUNTEER_REQUEST_COMMENT:
+                if (response.mStatus)
+                {
+                    toast(getString(R.string.posted));
+                }
+                break;
+            case VOLUNTEER_REQUEST_NGO:
+                if (response.mStatus)
+                {
+                    toast(getString(R.string.saved));
+                }
+                break;
+        }
     }
 }

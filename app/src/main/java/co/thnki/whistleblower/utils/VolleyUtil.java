@@ -1,5 +1,8 @@
 package co.thnki.whistleblower.utils;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -9,9 +12,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import co.thnki.whistleblower.WhistleBlower;
 import co.thnki.whistleblower.interfaces.ResultListener;
+import co.thnki.whistleblower.services.VolleyService;
 import co.thnki.whistleblower.singletons.VolleySingleton;
 
 
@@ -59,6 +65,85 @@ public class VolleyUtil
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         requestQueue.add(stringRequest);
+    }
+
+    public static void sendPostData(Map<String, String> postData, int requestCode)
+    {
+        sendPostData(convertMapToBundle(postData), requestCode);
+    }
+
+    public static void sendPostData(Bundle bundle, int requestCode)
+    {
+        Context appContext = WhistleBlower.getAppContext();
+        Intent intent = new Intent(appContext, VolleyService.class);
+        intent.putExtra(VolleyService.VOLLEY_BUNDLE, bundle );
+        intent.putExtra(VolleyService.VOLLEY_REQUEST_CODE, requestCode);
+        appContext.startService(intent);
+    }
+
+    public static void sendPostData(Bundle postData, final ResultListener<String> listener)
+    {
+        Log.d("VolleyService", "sendPostData");
+        final Map<String, String> mapData = convertBundleToMap(postData);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, ResultListener.URL,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response)
+                    {
+                        Log.d("VolleyService", "Volley response");
+                        if(listener != null)
+                        {
+                            listener.onSuccess(response);
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        Log.d("VolleyService", "Volley response");
+                        if(listener != null)
+                        {
+                            listener.onError(error);
+                        }
+                    }
+                })
+        {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                return mapData;
+            }
+        };
+        RequestQueue requestQueue = VolleySingleton.getInstance().getRequestQueue();
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                MY_SOCKET_TIMEOUT_MS,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+        requestQueue.add(stringRequest);
+    }
+
+    private static Map<String, String> convertBundleToMap(Bundle postData)
+    {
+        Map<String, String> map = new HashMap<>();
+        for (String key : postData.keySet())
+        {
+            map.put(key, postData.getString(key));
+        }
+        return map;
+    }
+
+    private static Bundle convertMapToBundle(Map<String, String> postData)
+    {
+        Bundle bundle = new Bundle();
+        for (String key : postData.keySet())
+        {
+            bundle.putString(key, postData.get(key));
+        }
+        return bundle;
     }
 
     public static void sendGetData(final Map<String, String> getData, final ResultListener<String> listener)

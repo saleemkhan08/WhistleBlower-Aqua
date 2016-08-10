@@ -4,7 +4,9 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -16,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 
@@ -31,6 +32,7 @@ import co.thnki.whistleblower.IssueActivity;
 import co.thnki.whistleblower.R;
 import co.thnki.whistleblower.WhistleBlower;
 import co.thnki.whistleblower.doas.IssuesDao;
+import co.thnki.whistleblower.fragments.VolunteerFragment;
 import co.thnki.whistleblower.interfaces.ResultListener;
 import co.thnki.whistleblower.pojos.Accounts;
 import co.thnki.whistleblower.pojos.Issue;
@@ -39,6 +41,7 @@ import co.thnki.whistleblower.utils.ConnectivityUtil;
 import co.thnki.whistleblower.utils.ImageUtil;
 import co.thnki.whistleblower.utils.VolleyUtil;
 
+import static co.thnki.whistleblower.IssueActivity.VOLUNTEER_FRAGMENT_TAG;
 import static co.thnki.whistleblower.WhistleBlower.toast;
 
 public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHolder>
@@ -50,6 +53,8 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
 
     SharedPreferences preferences;
     private ProgressDialog mProgressDialog;
+    private VolunteerFragment mVolunteerFragment;
+    private FragmentManager mFragmentManager;
 
     public IssueAdapter(AppCompatActivity activity, ArrayList<Issue> mIssuesList)
     {
@@ -58,6 +63,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         preferences = WhistleBlower.getPreferences();
         this.mIssuesArrayList = mIssuesList;
         mImageUtil = new ImageUtil(mActivity);
+        mFragmentManager = mActivity.getSupportFragmentManager();
     }
 
     @Override
@@ -110,7 +116,10 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             {
                 if (ConnectivityUtil.isConnected(mActivity))
                 {
-                    toast("Volunteer : " + position);
+                    Bundle bundle = new Bundle();
+                    bundle.putString(IssuesDao.ISSUE_ID, issue.issueId);
+                    mVolunteerFragment.setArguments(bundle);
+                    mVolunteerFragment.show(mFragmentManager, VOLUNTEER_FRAGMENT_TAG);
                 }
                 else
                 {
@@ -222,14 +231,14 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             public void onSuccess(String result)
             {
                 hideProgressDialog();
-                Toast.makeText(mActivity, result, Toast.LENGTH_SHORT).show();
+                toast(mActivity.getString(R.string.reported));
             }
 
             @Override
             public void onError(VolleyError error)
             {
                 hideProgressDialog();
-                Toast.makeText(mActivity, "Please Try Again" + "\n" + error.getMessage(), Toast.LENGTH_SHORT).show();
+                toast(mActivity.getString(R.string.please_try_again));
             }
         });
     }
@@ -246,11 +255,15 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             public void onSuccess(String result)
             {
                 hideProgressDialog();
-                Toast.makeText(mActivity, result, Toast.LENGTH_SHORT).show();
                 if (result.equals("Deleted"))
                 {
                     removeAt(position);
                     IssuesDao.delete(issueId);
+                    toast(mActivity.getString(R.string.deleted));
+                }
+                else
+                {
+                    toast(mActivity.getString(R.string.couldntDelete));
                 }
             }
 
@@ -258,7 +271,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
             public void onError(VolleyError error)
             {
                 hideProgressDialog();
-                Toast.makeText(mActivity, "Please Try Again" + "\n" + error.getMessage(), Toast.LENGTH_SHORT).show();
+                toast(mActivity.getString(R.string.please_try_again));
             }
         });
     }
@@ -294,6 +307,11 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         return mIssuesArrayList.size();
     }
 
+    public void setVolunteerFragment(VolunteerFragment volunteerFragment)
+    {
+        mVolunteerFragment = volunteerFragment;
+    }
+
     class IssueViewHolder extends RecyclerView.ViewHolder
     {
         @Bind(R.id.areaTypeName)
@@ -304,7 +322,7 @@ public class IssueAdapter extends RecyclerView.Adapter<IssueAdapter.IssueViewHol
         ImageView issueImage;
         @Bind(R.id.profilePic)
         ImageView profilePic;
-        @Bind(R.id.optionsIcon)
+        @Bind(R.id.deleteIcon)
         ImageView optionsIcon;
         @Bind(R.id.shareIcon)
         ImageView shareIcon;

@@ -311,7 +311,6 @@ public class AddIssueActivity extends AppCompatActivity
                 }
                 break;
         }
-
     }
 
     private void submitIssue()

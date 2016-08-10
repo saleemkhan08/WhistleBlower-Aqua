@@ -60,7 +60,7 @@
                     >
 
                     <ImageView
-                        android:id="@+id/optionsIcon"
+                        android:id="@+id/deleteIcon"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_centerInParent="true"
@@ -211,6 +211,6 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="30dp"
+        android:layout_height="20dp"
         android:background="#ddd"/>
 </LinearLayout>

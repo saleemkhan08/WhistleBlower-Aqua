@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -64,18 +63,6 @@ public class LocationTrackingService extends Service implements LocationListener
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId)
     {
-        if (intent == null)
-        {
-            Log.d(TAG, "onStartCommand");
-            if (!isStopServiceConditionMet())
-            {
-                if (PermissionUtil.isLocationPermissionAvailable() && !PermissionUtil.isLocationSettingsOn())
-                {
-                    String msg = "You have set a Location Alarm.\nPlease turn on Location settings?";
-                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-                }
-            }
-        }
         if (PermissionUtil.isLocationPermissionAvailable() && PermissionUtil.isLocationSettingsOn())
         {
             startLocationUpdates();
@@ -84,7 +71,7 @@ public class LocationTrackingService extends Service implements LocationListener
         {
             turnOnLocationSettings();
         }
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     private void turnOnLocationSettings()

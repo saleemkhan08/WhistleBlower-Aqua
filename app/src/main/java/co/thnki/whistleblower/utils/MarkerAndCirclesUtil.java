@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import co.thnki.whistleblower.R;
-import co.thnki.whistleblower.WhistleBlower;
 import co.thnki.whistleblower.doas.IssuesDao;
 import co.thnki.whistleblower.pojos.Issue;
 import co.thnki.whistleblower.pojos.MarkerAndCircle;
@@ -54,6 +53,7 @@ public class MarkerAndCirclesUtil
         mIssueMarkerMap = new HashMap<>();
         mGoogleMap.clear();
         new MarkerAndCircleAddingTask().execute();
+        Log.d("MarkerNCircleAddingTask", "constructor");
     }
 
     private class MarkerAndCircleAddingTask extends AsyncTask<Void, Void, Void>
@@ -110,13 +110,14 @@ public class MarkerAndCirclesUtil
                 .position(markerAndCircle.latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
-                .icon(getMapMarker(WhistleBlower.getAppContext(), R.mipmap.marker_bg, 40)));
+                .zIndex(1)
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.marker_bg)));
 
         ids[1] = bgMarker.getId();
 
         bgMarkerMap.put(markerAndCircle.id, bgMarker);
 
-        Marker marker = mGoogleMap.addMarker(new MarkerOptions()
+        /*Marker marker = mGoogleMap.addMarker(new MarkerOptions()
                 .position(markerAndCircle.latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
@@ -125,7 +126,7 @@ public class MarkerAndCirclesUtil
         imgMarkerMap.put(markerAndCircle.id, marker);
 
         mMarkerAndCircleMap.put(markerAndCircle.id, markerAndCircle);
-        ids[2] = marker.getId();
+        ids[2] = marker.getId();*/
         return ids;
     }
 
@@ -201,12 +202,15 @@ public class MarkerAndCirclesUtil
     public void addMarkerAndCircle(Issue issue)
     {
         String ids[] = addMarkerAndCircle(getMarkerAndCircle(issue));
-        mIssueMarkerMap.put(ids[0], issue.issueId);
-        mIssueMarkerMap.put(ids[1], issue.issueId);
-        mIssueMarkerMap.put(ids[2], issue.issueId);
+        if(issue.issueId != null)
+        {
+            mIssueMarkerMap.put(ids[0], issue.issueId);
+            mIssueMarkerMap.put(ids[1], issue.issueId);
+            mIssueMarkerMap.put(ids[2], issue.issueId);
+        }
     }
 
-    private static int getDrawableResId(int index)
+    /*private static int getDrawableResId(int index)
     {
         switch (index)
         {
@@ -215,7 +219,7 @@ public class MarkerAndCirclesUtil
             default:
                 return R.mipmap.map_pin;
         }
-    }
+    }*/
 
     private static LatLng getLatLng(String lat, String lng)
     {

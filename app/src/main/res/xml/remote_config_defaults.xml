@@ -2,15 +2,15 @@
 <defaultsMap>
     <entry>
         <key>latestVersionName</key>
-        <value>3</value>
+        <value>1</value>
     </entry>
     <entry>
         <key>newAppPkgName</key>
-        <value>co.thnki.locationalarm</value>
+        <value>co.thnki.whistleblower</value>
     </entry>
     <entry>
         <key>newAppName</key>
-        <value>Location Alarm</value>
+        <value>Whistle Blower</value>
     </entry>
     <entry>
         <key>newAppIcon</key>
@@ -26,7 +26,7 @@
     </entry>
     <entry>
         <key>adUnitId2</key>
-        <value>ca-app-pub-3940256099942544/1072772517</value>
+        <value>ca-app-pub-9949935976977846/7987489212</value>
     </entry>
     <entry>
         <key>adUnitId3</key>

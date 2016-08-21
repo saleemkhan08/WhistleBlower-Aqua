@@ -3,7 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:weightSum="10"
     >
@@ -12,7 +11,6 @@
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
-        app:cardElevation="20dp"
         android:layout_height="wrap_content">
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,8 +25,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="@dimen/issue_add_options_pad"
                 android:background="@drawable/bg_drawable"
-                android:padding="14dp"
                 android:src="@mipmap/tags_accent"/>
 
             <ImageView
@@ -36,8 +34,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="@dimen/issue_add_options_pad"
                 android:background="@drawable/bg_drawable"
-                android:padding="10dp"
                 android:src="@mipmap/user_icon_accent"/>
 
             <ImageView
@@ -45,17 +43,17 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="@dimen/issue_add_options_pad"
                 android:background="@drawable/bg_drawable"
-                android:padding="15dp"
                 android:src="@mipmap/gallery_accent"/>
 
             <ImageView
                 android:id="@+id/camera"
                 android:layout_width="0dp"
+                android:padding="@dimen/issue_add_options_pad"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/bg_drawable"
-                android:padding="15dp"
                 android:src="@mipmap/camera_icon_accent"/>
         </LinearLayout>
     </android.support.v7.widget.CardView>

@@ -22,13 +22,12 @@ import java.util.Map;
 import co.thnki.whistleblower.AddIssueActivity;
 import co.thnki.whistleblower.IssueActivity;
 import co.thnki.whistleblower.R;
+import co.thnki.whistleblower.WhistleBlower;
 import co.thnki.whistleblower.doas.IssuesDao;
+import co.thnki.whistleblower.fragments.MapFragment;
 import co.thnki.whistleblower.interfaces.ResultListener;
 import co.thnki.whistleblower.pojos.Issue;
-import co.thnki.whistleblower.singletons.Otto;
 import co.thnki.whistleblower.utils.VolleyUtil;
-
-import static co.thnki.whistleblower.services.NewsFeedsUpdateService.ISSUES_FEEDS_UPDATED;
 
 public class AddIssueService extends Service implements ResultListener<String>
 {
@@ -65,7 +64,7 @@ public class AddIssueService extends Service implements ResultListener<String>
             }
 
             mBuilder = new NotificationCompat.Builder(mContext)
-                    .setSmallIcon(R.mipmap.bullhorn)
+                    .setSmallIcon(R.mipmap.bull_horn_white_small)
                     .setOngoing(true)
                     .setContentTitle("Posting the Issue.")
                     .setProgress(0, 0, true)
@@ -151,23 +150,21 @@ public class AddIssueService extends Service implements ResultListener<String>
         }
         else
         {
+            startService(new Intent(this, NewsFeedsUpdateService.class));
             Intent openIntent = new Intent(mContext, IssueActivity.class);
             mIssue.issueId = response;
-            IssuesDao.delete(mIssue.issueId);
-            startService(new Intent(this, NewsFeedsUpdateService.class));
-            Otto.post(ISSUES_FEEDS_UPDATED);
             openIntent.putExtra(AddIssueActivity.ISSUE_DATA, mIssue);
-
             PendingIntent pIntent = PendingIntent.getActivity(mContext, (int) System.currentTimeMillis(), openIntent, 0);
             mBuilder = new NotificationCompat.Builder(mContext);
             mBuilder.setOngoing(false)
-                    .setSmallIcon(R.mipmap.bullhorn)
+                    .setSmallIcon(R.mipmap.bull_horn_white_small)
                     .setContentIntent(pIntent)
                     .setAutoCancel(true)
                     .setContentTitle(getString(R.string.issuePosted))
                     .setContentText(getText(R.string.clickNotificationToOpen));
         }
         mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
+        WhistleBlower.getPreferences().edit().putBoolean(MapFragment.IS_RELOAD_NECESSARY, true).apply();
         AddIssueService.this.stopSelf();
     }
 
@@ -180,9 +177,8 @@ public class AddIssueService extends Service implements ResultListener<String>
     private void onError()
     {
         mBuilder.setOngoing(false)
-                .setSmallIcon(R.mipmap.bullhorn)
+                .setSmallIcon(R.mipmap.bull_horn_white_small)
                 .setContentTitle(getString(R.string.postingIssueFailed))
-                .setContentText(getString(R.string.clickOnRetryToPostAgain))
                 .setProgress(0, 0, false)
                 .setAutoCancel(true);
     }

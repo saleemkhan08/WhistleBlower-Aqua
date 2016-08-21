@@ -28,7 +28,7 @@
             android:layout_alignParentRight="true"
             android:background="@drawable/bg_drawable"
             android:padding="13dp"
-            android:src="@mipmap/cross"/>
+            android:src="@mipmap/ic_clear_white_24dp"/>
     </RelativeLayout>
 
     <ScrollView

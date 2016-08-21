@@ -76,6 +76,11 @@ public class DialogsUtil
 
     public String getSelectedIssueType()
     {
-        return mIssueTypes[mPreferences.getInt(ISSUE_TYPE, 0)];
+        int issueTypeIndex = mPreferences.getInt(ISSUE_TYPE, 0);
+        if(issueTypeIndex < 0)
+        {
+            return mIssueTypes[0];
+        }
+        return mIssueTypes[issueTypeIndex];
     }
 }

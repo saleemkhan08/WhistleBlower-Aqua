@@ -26,21 +26,22 @@
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:contentDescription="@string/app_name"
-                android:src="@mipmap/bullhorn"/>
+                android:src="@mipmap/bullhorn_old"/>
         </RelativeLayout>
 
         <TextView
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="-20dp"
+            android:layout_marginTop="-30dp"
             android:layout_weight="2"
+            android:transitionName="@string/sharedElement1"
             android:gravity="center_horizontal"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:text="@string/app_name"
             android:textColor="@color/white"
-            android:textSize="50sp"
+            android:textSize="90sp"
             />
     </LinearLayout>
     <com.google.android.gms.common.SignInButton

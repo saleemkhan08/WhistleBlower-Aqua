@@ -7,6 +7,7 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,7 +27,6 @@ import co.thnki.whistleblower.pojos.Accounts;
 import co.thnki.whistleblower.singletons.Otto;
 import co.thnki.whistleblower.utils.VolleyUtil;
 
-import static co.thnki.whistleblower.R.id.comment;
 import static co.thnki.whistleblower.WhistleBlower.toast;
 import static co.thnki.whistleblower.doas.IssuesDao.ISSUE_ID;
 
@@ -43,14 +43,8 @@ public class VolunteerFragment extends DialogFragment
     @Bind(R.id.ngoSuggestionContainer)
     LinearLayout mNgoSuggestionContainer;
 
-    @Bind(R.id.commentContainer)
-    LinearLayout mCommentContainer;
-
-    @Bind(comment)
+    @Bind(R.id.comment)
     EditText mCommentEditText;
-
-    @Bind(R.id.comment2)
-    EditText mCommentEditText2;
 
     @Bind(R.id.ngoName)
     EditText mNgoNameEditText;
@@ -59,6 +53,9 @@ public class VolunteerFragment extends DialogFragment
     EditText mNgoUrlEditText;
 
     public boolean mIsNgoSuggestionExpanded;
+
+    @Bind(R.id.suggestNgoButtonContainer)
+    public View mSuggestNgoButtonContainer;
 
     public VolunteerFragment()
     {
@@ -70,6 +67,7 @@ public class VolunteerFragment extends DialogFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         View parentView = inflater.inflate(R.layout.fragment_volunteer, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
@@ -100,28 +98,26 @@ public class VolunteerFragment extends DialogFragment
     private void clearEditTextViews()
     {
         mCommentEditText.setText("");
-        mCommentEditText2.setText("");
         mNgoNameEditText.setText("");
         mNgoUrlEditText.setText("");
     }
 
-
-    @OnClick(R.id.saveNgoDetails)
+    @OnClick(R.id.postComment)
     public void saveNgoDetails()
     {
         Otto.post(POSTING_COMMENT);
         String ngoName = mNgoNameEditText.getText().toString().trim();
-        String comment = mCommentEditText2.getText().toString().trim();
+        String comment = mCommentEditText.getText().toString().trim();
         String ngoUrl = mNgoUrlEditText.getText().toString().trim();
         if (comment.isEmpty())
         {
             toast(getString(R.string.pleaseEnterTheComment));
         }
-        else if (ngoName.isEmpty())
+        else if(mIsNgoSuggestionExpanded && ngoName.isEmpty())
         {
             toast(getString(R.string.pleaseEnterNgoName));
         }
-        else if (!isValidURL(ngoUrl))
+        else if (mIsNgoSuggestionExpanded && !isValidURL(ngoUrl))
         {
             toast(getString(R.string.pleaseEnterNgoUrl));
         }
@@ -144,7 +140,7 @@ public class VolunteerFragment extends DialogFragment
         }
     }
 
-    public boolean isValidURL(String urlStr)
+    private boolean isValidURL(String urlStr)
     {
         try
         {
@@ -160,44 +156,18 @@ public class VolunteerFragment extends DialogFragment
     @OnClick(R.id.suggestNgoButton)
     public void showNgoSuggestionBox()
     {
-        mCommentContainer.setVisibility(View.GONE);
+        mSuggestNgoButtonContainer.setVisibility(View.GONE);
         mNgoSuggestionContainer.setVisibility(View.VISIBLE);
         mIsNgoSuggestionExpanded = true;
-        mCommentEditText2.setText(mCommentEditText.getText());
-        mCommentEditText2.requestFocus();
     }
 
     public void hideSuggestNgoContainer()
     {
-        mCommentContainer.setVisibility(View.VISIBLE);
+        mSuggestNgoButtonContainer.setVisibility(View.VISIBLE);
         mNgoSuggestionContainer.setVisibility(View.GONE);
         mIsNgoSuggestionExpanded = false;
     }
 
-    @OnClick(R.id.postComment)
-    public void postComment()
-    {
-        Otto.post(POSTING_COMMENT);
-        SharedPreferences preferences = WhistleBlower.getPreferences();
-        String comment = mCommentEditText.getText().toString();
-        if (!comment.trim().isEmpty())
-        {
-            Map<String, String> data = new HashMap<>();
-            data.put(ISSUE_ID, mIssueId);
-            data.put(VolleyUtil.KEY_ACTION, POST_COMMENT);
-            data.put(COMMENT, comment);
-            data.put(IssuesDao.USER_ID, preferences.getString(Accounts.GOOGLE_ID, ""));
-            data.put(IssuesDao.USER_DP_URL, preferences.getString(Accounts.PHOTO_URL, ""));
-            data.put(IssuesDao.USERNAME, preferences.getString(Accounts.NAME, ""));
-
-            VolleyUtil.sendPostData(data, VOLUNTEER_REQUEST_COMMENT);
-            dismiss();
-        }
-        else
-        {
-            toast(getString(R.string.commentCannontBeEmpty));
-        }
-    }
 
     @OnClick(R.id.closeDialog)
     public void close()
@@ -216,7 +186,6 @@ public class VolunteerFragment extends DialogFragment
     public void onDismiss(DialogInterface dialog)
     {
         super.onDismiss(dialog);
-        Otto.post(MapFragment.DIALOG_DISMISS);
         Otto.unregister(this);
     }
 

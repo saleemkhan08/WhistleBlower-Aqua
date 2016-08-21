@@ -44,11 +44,13 @@ import co.thnki.whistleblower.pojos.VolleyResponse;
 import co.thnki.whistleblower.receivers.InternetConnectivityListener;
 import co.thnki.whistleblower.services.RemoteConfigService;
 import co.thnki.whistleblower.singletons.Otto;
+import co.thnki.whistleblower.utils.IssueRecyclerViewUtil;
 import co.thnki.whistleblower.utils.LocationUtil;
 import co.thnki.whistleblower.utils.TransitionUtil;
 
-import static co.thnki.whistleblower.IssueActivity.VOLUNTEER_FRAGMENT_TAG;
+import static co.thnki.whistleblower.AddIssueActivity.ISSUE_DATA;
 import static co.thnki.whistleblower.WhistleBlower.toast;
+import static co.thnki.whistleblower.adapters.IssueAndCommentsAdapter.VOLUNTEER_FRAGMENT_TAG;
 import static co.thnki.whistleblower.fragments.VolunteerFragment.VOLUNTEER_REQUEST_COMMENT;
 import static co.thnki.whistleblower.fragments.VolunteerFragment.VOLUNTEER_REQUEST_NGO;
 import static co.thnki.whistleblower.services.NewsFeedsUpdateService.ISSUES_FEEDS_UPDATED;
@@ -63,7 +65,9 @@ public class MainActivity extends AppCompatActivity
     private static final String GET_ISSUES = "getIssues";
     private static final String LIMIT = "limit";
     private static final String OFFSET = "offset";
-
+    static final String ADD_TEMP_MARKER = "addTempMarker";
+    public static final String CAN_PERMISSION_BE_ASKED = "canPermissionBeAsked";
+    public static final String LAST_ITEM_REACHED = "lastItemReached";
 
     @Bind(R.id.sliding_layout)
     SlidingUpPanelLayout mLayout;
@@ -106,10 +110,9 @@ public class MainActivity extends AppCompatActivity
      */
 
     public static final String ALARM_LIST_EMPTY_TEXT = "ALARM_LIST_EMPTY_TEXT";
-    public static final String RELOAD_LIST = "reloadList";
 
-    @BindString(R.string.noLocationAlarmsAreSet)
-    String youHaventSetAnyLocationAlarm;
+    @BindString(R.string.noInternet)
+    String mNoInternet;
 
     @Bind(R.id.emptyList)
     ViewGroup emptyList;
@@ -127,23 +130,21 @@ public class MainActivity extends AppCompatActivity
      * End of Fragment Content
      */
 
-    IssueAdapter mIssueAdapter;
+    private IssueAdapter mIssueAdapter;
     private VolunteerFragment mVolunteerFragment;
     private FragmentManager mFragmentManager;
+    private IssueRecyclerViewUtil mIssuesRecyclerViewUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         Log.d("LagIssue", "onCreate  : MainActivity");
         super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= 21)
-        {
-            getWindow().setSharedElementExitTransition(TransitionInflater
-                    .from(this).inflateTransition(R.transition.shared_element_transition));
-        }
+        handleEnterAndExitTransition();
 
-        setContentView(R.layout.activity_main_sliding_up);
+        setContentView(R.layout.activity_main);
         mPreferences = WhistleBlower.getPreferences();
+        mPreferences.edit().putBoolean(CAN_PERMISSION_BE_ASKED, true).apply();
         mFragmentManager = getSupportFragmentManager();
         ButterKnife.bind(this);
         Otto.register(this);
@@ -159,7 +160,6 @@ public class MainActivity extends AppCompatActivity
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
         }
-
         initializeIssueList();
     }
 
@@ -179,9 +179,12 @@ public class MainActivity extends AppCompatActivity
 
         MobileAds.initialize(WhistleBlower.getAppContext(), mAdUnitId);
 
-        mIssueAdapter = new IssueAdapter(this, issuesList);
+        mIssueAdapter = new IssueAdapter(this);
         mIssuesRecyclerView.setAdapter(mIssueAdapter);
         mIssuesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        mIssuesRecyclerViewUtil = new IssueRecyclerViewUtil(mIssueAdapter);
+        mIssuesRecyclerView.addOnScrollListener(mIssuesRecyclerViewUtil);
 
         mVolunteerFragment = (VolunteerFragment) mFragmentManager.findFragmentByTag(VOLUNTEER_FRAGMENT_TAG);
         if (mVolunteerFragment == null)
@@ -189,6 +192,7 @@ public class MainActivity extends AppCompatActivity
             mVolunteerFragment = new VolunteerFragment();
         }
         mIssueAdapter.setVolunteerFragment(mVolunteerFragment);
+        mIssueAdapter.updateList(issuesList);
     }
 
     private void loadEmptyListAd()
@@ -258,15 +262,28 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent)
     {
         super.onNewIntent(intent);
-        Otto.post(RELOAD_LIST);
+        Log.d("MarkerNCircleAddingTask", "onNewIntent");
+        if (intent.hasExtra(ISSUE_DATA))
+        {
+            Log.d("MarkerNCircleAddingTask", "onNewIntent : ISSUE_DATA");
+            Issue issue = intent.getParcelableExtra(ISSUE_DATA);
+            showIssueOnMap(issue);
+            if (intent.hasExtra(ADD_TEMP_MARKER))
+            {
+                mMapFragment.mMarkerAndCircle.addMarkerAndCircle(issue);
+            }
+        }
+        else if (intent.hasExtra(MapFragment.IS_RELOAD_NECESSARY))
+        {
+            mIssueAdapter.updateList(IssuesDao.getList());
+        }
     }
-
 
     @Subscribe
     public void showIssueOnMap(Issue issue)
     {
         mLayout.setPanelState(COLLAPSED);
-        mMapFragment.gotoLatLng(LocationUtil.getLatLng(issue.latitude, issue.longitude), true);
+        mMapFragment.gotoLatLng(LocationUtil.getLatLng(issue.latitude, issue.longitude), false);
     }
 
     @Override
@@ -274,6 +291,8 @@ public class MainActivity extends AppCompatActivity
     {
         super.onDestroy();
         Otto.unregister(this);
+        mIssueAdapter.unRegister();
+        mPreferences.edit().putBoolean(CAN_PERMISSION_BE_ASKED, false).apply();
     }
 
     @Subscribe
@@ -285,8 +304,10 @@ public class MainActivity extends AppCompatActivity
             case InternetConnectivityListener.INTERNET_CONNECTED:
                 break;
             case ISSUES_FEEDS_UPDATED:
-                mIssueAdapter.mIssuesArrayList = IssuesDao.getList();
-                if (mIssueAdapter.mIssuesArrayList.size() < 1)
+                ArrayList<Issue> issueArrayList = IssuesDao.getList();
+                mIssueAdapter.updateList(issueArrayList);
+                mMapFragment.reloadMarkersAndCircles();
+                if (issueArrayList.size() < 1)
                 {
                     showEmptyListString();
                 }
@@ -353,6 +374,7 @@ public class MainActivity extends AppCompatActivity
                 mSlidingToolbarState = newState;
                 if (newState == COLLAPSED)
                 {
+                    Log.d("MarkerNCircleAddingTask", "COLLAPSED");
                     Otto.post(MapFragment.DIALOG_DISMISS);
                 }
             }
@@ -365,7 +387,6 @@ public class MainActivity extends AppCompatActivity
                 mLayout.setPanelState(COLLAPSED);
             }
         });
-
     }
 
     @Subscribe
@@ -374,17 +395,21 @@ public class MainActivity extends AppCompatActivity
         switch (response.mRequestCode)
         {
             case VOLUNTEER_REQUEST_COMMENT:
+            case VOLUNTEER_REQUEST_NGO:
                 if (response.mStatus)
                 {
                     toast(getString(R.string.posted));
                 }
                 break;
-            case VOLUNTEER_REQUEST_NGO:
-                if (response.mStatus)
-                {
-                    toast(getString(R.string.saved));
-                }
-                break;
+        }
+    }
+
+    private void handleEnterAndExitTransition()
+    {
+        if (Build.VERSION.SDK_INT >= 21)
+        {
+            getWindow().setSharedElementEnterTransition(TransitionInflater
+                    .from(this).inflateTransition(R.transition.shared_element_transition));
         }
     }
 }

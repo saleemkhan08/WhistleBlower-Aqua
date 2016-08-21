@@ -1,12 +1,13 @@
 package co.thnki.whistleblower;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +39,7 @@ import butterknife.Bind;
 import butterknife.BindColor;
 import butterknife.ButterKnife;
 import co.thnki.whistleblower.doas.IssuesDao;
+import co.thnki.whistleblower.fragments.MapFragment;
 import co.thnki.whistleblower.fragments.VolunteerFragment;
 import co.thnki.whistleblower.interfaces.ResultListener;
 import co.thnki.whistleblower.pojos.Accounts;
@@ -45,9 +48,9 @@ import co.thnki.whistleblower.pojos.VolleyResponse;
 import co.thnki.whistleblower.singletons.Otto;
 import co.thnki.whistleblower.utils.ConnectivityUtil;
 import co.thnki.whistleblower.utils.ImageUtil;
-import co.thnki.whistleblower.utils.TransitionUtil;
 import co.thnki.whistleblower.utils.VolleyUtil;
 
+import static co.thnki.whistleblower.AddIssueActivity.ISSUE_DATA;
 import static co.thnki.whistleblower.R.id.deleteIcon;
 import static co.thnki.whistleblower.WhistleBlower.toast;
 import static co.thnki.whistleblower.fragments.VolunteerFragment.POSTING_COMMENT;
@@ -67,11 +70,12 @@ public class IssueActivity extends AppCompatActivity
     @Bind(R.id.issueDescription)
     TextView issueDescription;
 
-    @Bind(R.id.commentProgressContainer)
-    LinearLayout mBar;
+    @Bind(R.id.issueImageContainer)
+    RelativeLayout issueImageContainer;
 
     @Bind(R.id.issueImage)
-    ImageView issueImage;
+    ImageView mIssueImage;
+
     @Bind(R.id.profilePic)
     ImageView profilePic;
     @Bind(deleteIcon)
@@ -152,7 +156,7 @@ public class IssueActivity extends AppCompatActivity
 
     private void handleIssueImage()
     {
-        mImageUtil.displayImage(mIssue.imgUrl, issueImage, false);
+        mImageUtil.displayImage(mIssue.imgUrl, mIssueImage);
     }
 
     private void handleProfilePic()
@@ -160,11 +164,11 @@ public class IssueActivity extends AppCompatActivity
         String dpUrl = mIssue.userDpUrl;
         if (dpUrl == null || dpUrl.isEmpty())
         {
-            profilePic.setImageResource(R.mipmap.user_primary_dark_o);
+            profilePic.setImageResource(R.mipmap.user_icon_accent);
         }
         else
         {
-            mImageUtil.displayImage(dpUrl, profilePic, true);
+            mImageUtil.displayRoundedImage(dpUrl, profilePic);
             profilePic.setBackgroundColor(colorTransparent);
         }
     }
@@ -197,7 +201,7 @@ public class IssueActivity extends AppCompatActivity
                 {
                     public boolean onMenuItemClick(MenuItem item)
                     {
-                        if (ConnectivityUtil.isConnected(IssueActivity.this))
+                        if (ConnectivityUtil.isConnected())
                         {
                             switch (item.getItemId())
                             {
@@ -205,7 +209,7 @@ public class IssueActivity extends AppCompatActivity
                                     editIssue(mIssue);
                                     break;
                                 case R.id.deleteIssue:
-                                    deleteIssue(mIssue.issueId);
+                                    confirmDelete(mIssue);
                                     break;
                                 case R.id.reportIssue:
                                     reportIssue(mIssue.issueId);
@@ -225,6 +229,30 @@ public class IssueActivity extends AppCompatActivity
         });
     }
 
+    private void confirmDelete(final Issue mIssue)
+    {
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.action_delete);
+        dialog.setMessage(R.string.areYouSureYouWantToDeleteThisPost);
+        dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                deleteIssue(mIssue.issueId);
+                dialog.dismiss();
+            }
+        });
+        dialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
     private void handleVolunteer()
     {
         volunteerContainer.setOnClickListener(new View.OnClickListener()
@@ -232,7 +260,7 @@ public class IssueActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                if (ConnectivityUtil.isConnected(IssueActivity.this))
+                if (ConnectivityUtil.isConnected())
                 {
                     FragmentManager manager = getSupportFragmentManager();
                     VolunteerFragment mVolunteerFragment = (VolunteerFragment) manager.findFragmentByTag(VOLUNTEER_FRAGMENT_TAG);
@@ -263,7 +291,7 @@ public class IssueActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                if (ConnectivityUtil.isConnected(IssueActivity.this))
+                if (ConnectivityUtil.isConnected())
                 {
                     Intent share = new Intent(Intent.ACTION_SEND);
                     share.setType("text/plain");
@@ -287,15 +315,9 @@ public class IssueActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                onBackPressed();
-                new Handler().postDelayed(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        Otto.post(mIssue);
-                    }
-                }, 1000);
+                Intent intent = new Intent(IssueActivity.this, MainActivity.class);
+                intent.putExtra(ISSUE_DATA, mIssue);
+                startActivity(intent);
             }
         });
     }
@@ -307,9 +329,9 @@ public class IssueActivity extends AppCompatActivity
         {
             mIssue = intent.getParcelableExtra(IssuesDao.ISSUE_ID);
         }
-        else if (intent.hasExtra(AddIssueActivity.ISSUE_DATA))
+        else if (intent.hasExtra(ISSUE_DATA))
         {
-            mIssue = intent.getParcelableExtra(AddIssueActivity.ISSUE_DATA);
+            mIssue = intent.getParcelableExtra(ISSUE_DATA);
         }
         else
         {
@@ -323,13 +345,12 @@ public class IssueActivity extends AppCompatActivity
     private void editIssue(Issue issue)
     {
         Intent intent = new Intent(this, AddIssueActivity.class);
-        intent.putExtra(AddIssueActivity.ISSUE_DATA, issue);
+        intent.putExtra(ISSUE_DATA, issue);
 
         if (Build.VERSION.SDK_INT >= 21)
         {
-            issueImage.setTransitionName(getString(R.string.sharedElement1));
             ActivityOptionsCompat optionsCompat = ActivityOptionsCompat
-                    .makeSceneTransitionAnimation(this, issueImage, issueImage.getTransitionName());
+                    .makeSceneTransitionAnimation(this, issueImageContainer, issueImageContainer.getTransitionName());
             startActivity(intent, optionsCompat.toBundle());
         }
         else
@@ -358,7 +379,7 @@ public class IssueActivity extends AppCompatActivity
         }
     }
 
-    private void deleteIssue(String issueId)
+    private void deleteIssue(final String issueId)
     {
         showProgressDialog("Deleting...");
         Map<String, String> map = new HashMap<>();
@@ -369,7 +390,12 @@ public class IssueActivity extends AppCompatActivity
             @Override
             public void onSuccess(String result)
             {
+                IssuesDao.delete(issueId);
                 hideProgressDialog();
+                Intent intent = new Intent(IssueActivity.this, MainActivity.class);
+                mPreferences.edit().putBoolean(MapFragment.IS_RELOAD_NECESSARY, true).apply();
+                intent.putExtra(MapFragment.IS_RELOAD_NECESSARY, true);
+                startActivity(intent);
                 Toast.makeText(IssueActivity.this, result, Toast.LENGTH_SHORT).show();
             }
 
@@ -409,31 +435,18 @@ public class IssueActivity extends AppCompatActivity
     class CommentsTask extends AsyncTask<Void, Void, Void>
     {
         @Override
-        protected void onPreExecute()
-        {
-            TransitionUtil.slideTransition(mBar);
-            mBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
         protected Void doInBackground(Void... voids)
         {
             Bundle bundle = new Bundle();
             bundle.putString(VolleyUtil.KEY_ACTION, GET_COMMENTS);
+            bundle.putString(VolleyUtil.KEY_LIMIT, "30");
+            bundle.putString(VolleyUtil.KEY_OFFSET, "0");
             bundle.putString(IssuesDao.ISSUE_ID, mIssue.issueId);
             VolleyUtil.sendPostData(bundle, COMMENTS_REQUEST_CODE);
             return null;
         }
     }
 
-    @Subscribe
-    public void showProgressBar(String action)
-    {
-        if(action.equals(POSTING_COMMENT))
-        {
-            mBar.setVisibility(View.VISIBLE);
-        }
-    }
     @Subscribe
     public void volleyResponse(VolleyResponse response)
     {
@@ -443,23 +456,28 @@ public class IssueActivity extends AppCompatActivity
                 if (response.mStatus)
                 {
                     loadComments(response.mResponse);
+                    findViewById(R.id.commentProgressContainer).setVisibility(View.GONE);
+                    hideProgressDialog();
                 }
-                TransitionUtil.slideTransition(mBar);
-                mBar.setVisibility(View.GONE);
                 break;
 
             case VOLUNTEER_REQUEST_COMMENT:
-                if (response.mStatus)
-                {
-                    new CommentsTask().execute();
-                }
-
-                break;
             case VOLUNTEER_REQUEST_NGO:
                 if (response.mStatus)
                 {
                     new CommentsTask().execute();
                 }
+                break;
+        }
+    }
+
+    @Subscribe
+    public void ProgressBar(String action)
+    {
+        switch (action)
+        {
+            case POSTING_COMMENT :
+                showProgressDialog(getString(R.string.posting));
                 break;
         }
     }
@@ -479,7 +497,7 @@ public class IssueActivity extends AppCompatActivity
                 LayoutInflater inflater = LayoutInflater.from(this);
                 LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.comment_layout, null, false);
 
-                if(mPreferences.getString(Accounts.GOOGLE_ID, "").equals(json.getString(IssuesDao.USER_ID)))
+                if (mPreferences.getString(Accounts.GOOGLE_ID, "").equals(json.getString(IssuesDao.USER_ID)))
                 {
                     ImageView deleteIcon = (ImageView) layout.findViewById(R.id.deleteIcon);
                     deleteIcon.setVisibility(View.VISIBLE);
@@ -501,7 +519,7 @@ public class IssueActivity extends AppCompatActivity
                 }
 
                 ImageView profilePic = (ImageView) layout.findViewById(R.id.profilePic);
-                mImageUtil.displayImage(json.getString(IssuesDao.USER_DP_URL), profilePic, true);
+                mImageUtil.displayRoundedImage(json.getString(IssuesDao.USER_DP_URL), profilePic);
 
                 TextView username = (TextView) layout.findViewById(R.id.username);
                 username.setText(json.getString(IssuesDao.USERNAME));
@@ -542,9 +560,7 @@ public class IssueActivity extends AppCompatActivity
 
     private void deleteComment(String string)
     {
-        TransitionUtil.slideTransition(mBar);
-        mBar.setVisibility(View.VISIBLE);
-
+        showProgressDialog("Deleting...");
         Map<String, String> data = new HashMap<>();
         data.put(VolleyUtil.KEY_ACTION, DELETE_COMMENT);
         data.put(COMMENT_ID, string);
@@ -553,7 +569,7 @@ public class IssueActivity extends AppCompatActivity
             @Override
             public void onSuccess(String result)
             {
-                if(IssueActivity.this != null && !IssueActivity.this.isDestroyed())
+                if (IssueActivity.this != null && !IssueActivity.this.isDestroyed())
                 {
                     new CommentsTask().execute();
                 }
@@ -562,7 +578,8 @@ public class IssueActivity extends AppCompatActivity
             @Override
             public void onError(VolleyError error)
             {
-
+                hideProgressDialog();
+                toast(getString(R.string.please_try_again));
             }
         });
     }

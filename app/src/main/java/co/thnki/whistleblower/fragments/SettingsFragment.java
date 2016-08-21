@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -46,6 +47,7 @@ public class SettingsFragment extends DialogFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         View parentView = inflater.inflate(R.layout.fragment_settings, container, false);
         ButterKnife.bind(this, parentView);
         Otto.register(this);
@@ -53,7 +55,7 @@ public class SettingsFragment extends DialogFragment
         dialogTitle.setTypeface(WhistleBlower.getTypeFace());
         mPreference = WhistleBlower.getPreferences();
         mMapTypeValue.setText(mPreference.getString(MAP_TYPE_TEXT, getString(R.string.normal)));
-        mHintsSettingValue.setText(mPreference.getBoolean(SHOW_HINTS,false) ? getString(R.string.show) : getString(R.string.hide));
+        hideHints();
         return parentView;
     }
 
@@ -120,7 +122,6 @@ public class SettingsFragment extends DialogFragment
     public void onDismiss(DialogInterface dialog)
     {
         super.onDismiss(dialog);
-        Otto.post(MapFragment.DIALOG_DISMISS);
         Otto.unregister(this);
     }
 

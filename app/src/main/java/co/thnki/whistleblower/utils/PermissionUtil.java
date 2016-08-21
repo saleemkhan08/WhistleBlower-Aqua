@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -62,13 +63,17 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
         }
         if (intent.hasExtra(LOCATION_SETTINGS))
         {
-            if (isLocationPermissionAvailable())
+            SharedPreferences preferences = WhistleBlower.getPreferences();
+            if(preferences.getBoolean(MainActivity.CAN_PERMISSION_BE_ASKED, false))
             {
-                requestLocationSettings();
-            }
-            else
-            {
-                requestLocationPermission();
+                if (isLocationPermissionAvailable())
+                {
+                    requestLocationSettings();
+                }
+                else
+                {
+                    requestLocationPermission();
+                }
             }
         }
         if (intent.hasExtra(REQUEST_NOT_TO_TURN_LOCATION_OFF))

@@ -28,8 +28,8 @@
         android:id="@+id/dragView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
         android:background="#eee"
+        android:clickable="true"
         android:focusable="false"
         android:orientation="vertical">
 
@@ -50,15 +50,14 @@
             >
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                >
-
+                android:layout_height="60dp">
                 <TextView
                     android:id="@+id/emptyListTextView"
                     style="@style/emptyList"
-                    android:text="@string/noLocationAlarmsAreSet"
+                    android:text="@string/noIssuesFound"
                     />
             </LinearLayout>
+
             <include layout="@layout/ad_row"/>
         </LinearLayout>
     </LinearLayout>

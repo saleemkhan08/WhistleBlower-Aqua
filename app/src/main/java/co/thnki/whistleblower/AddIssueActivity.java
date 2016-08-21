@@ -6,19 +6,18 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -47,6 +46,7 @@ import co.thnki.whistleblower.utils.DialogsUtil;
 import co.thnki.whistleblower.utils.ImageUtil;
 import co.thnki.whistleblower.utils.LocationUtil;
 
+import static co.thnki.whistleblower.MainActivity.ADD_TEMP_MARKER;
 import static co.thnki.whistleblower.R.id.areaTypeName;
 import static co.thnki.whistleblower.R.id.editIcon;
 import static co.thnki.whistleblower.WhistleBlower.toast;
@@ -74,6 +74,9 @@ public class AddIssueActivity extends AppCompatActivity
     @Bind(R.id.username)
     TextView mUsername;
 
+    @Bind(R.id.issueImageContainer)
+    public RelativeLayout issueImageContainer;
+
     private String mAddress;
     private LatLng mLatLng;
 
@@ -93,8 +96,6 @@ public class AddIssueActivity extends AppCompatActivity
     private ImageUtil mImageUtil;
     private Issue mIssue;
     private static int temp;
-    private Drawable mAnonymousDrawable;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -113,7 +114,6 @@ public class AddIssueActivity extends AppCompatActivity
         mPreferences = WhistleBlower.getPreferences();
         Intent intent = getIntent();
         mAnonymousString = getString(R.string.anonymous);
-        mAnonymousDrawable = ContextCompat.getDrawable(this, R.mipmap.user_primary_dark_o);
         if (intent.hasExtra(ISSUE_DATA))
         {
             mIssue = intent.getParcelableExtra(ISSUE_DATA);
@@ -160,7 +160,7 @@ public class AddIssueActivity extends AppCompatActivity
 
             if (mIssue.anonymous)
             {
-                mProfilePic.setImageDrawable(mAnonymousDrawable);
+                mProfilePic.setImageResource(R.mipmap.user_icon_accent);
                 mUsername.setText(mAnonymousString);
             }
             else
@@ -170,15 +170,15 @@ public class AddIssueActivity extends AppCompatActivity
                 mUsername.setText(userName);
                 if (dpUrl.trim().isEmpty())
                 {
-                    mProfilePic.setBackground(mAnonymousDrawable);
+                    mProfilePic.setImageResource(R.mipmap.user_icon_accent);
                 }
                 else
                 {
-                    mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
+                    mImageUtil.displayRoundedImage(dpUrl, mProfilePic);
                 }
             }
             mImageUri = mIssue.imgUrl;
-            mImageUtil.displayImage(mIssue.imgUrl, mImgPreview, false);
+            mImageUtil.displayImage(mIssue.imgUrl, mImgPreview);
             if (!mIssue.description.trim().isEmpty())
             {
                 mDescription.setText(mIssue.description);
@@ -233,7 +233,7 @@ public class AddIssueActivity extends AppCompatActivity
     {
         if (mPreferences.getBoolean(IssuesDao.ANONYMOUS, false))
         {
-            mProfilePic.setImageDrawable(mAnonymousDrawable);
+            mProfilePic.setImageResource(R.mipmap.user_icon_accent);
             mUsername.setText(mAnonymousString);
         }
         else
@@ -243,11 +243,11 @@ public class AddIssueActivity extends AppCompatActivity
             mUsername.setText(userName);
             if (dpUrl.trim().isEmpty())
             {
-                mProfilePic.setBackground(mAnonymousDrawable);
+                mProfilePic.setImageResource(R.mipmap.user_icon_accent);
             }
             else
             {
-                mImageUtil.displayImage(this, dpUrl, mProfilePic, true);
+                mImageUtil.displayRoundedImage(dpUrl, mProfilePic);
             }
         }
     }
@@ -301,7 +301,7 @@ public class AddIssueActivity extends AppCompatActivity
                 toast(getString(R.string.pleaseEnterIssueType));
                 break;
             default:
-                if (ConnectivityUtil.isConnected(this))
+                if (ConnectivityUtil.isConnected())
                 {
                     submitIssue();
                 }
@@ -340,7 +340,10 @@ public class AddIssueActivity extends AppCompatActivity
 
         intent.putExtra(ISSUE_DATA, mIssue);
         startService(intent);
+
         intent = new Intent(AddIssueActivity.this, MainActivity.class);
+        intent.putExtra(ISSUE_DATA, mIssue);
+        intent.putExtra(ADD_TEMP_MARKER, true);
         startActivity(intent);
         finish();
     }
@@ -361,7 +364,8 @@ public class AddIssueActivity extends AppCompatActivity
         }
         else if (resultCode == Crop.RESULT_ERROR)
         {
-            toast(Crop.getError(result).getMessage());
+            Log.d("CropGetError",Crop.getError(result).getMessage());
+            toast(getString(R.string.sorryImageFormatNotSupported));
         }
     }
 

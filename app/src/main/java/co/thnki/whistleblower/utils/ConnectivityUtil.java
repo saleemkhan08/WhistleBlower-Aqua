@@ -8,16 +8,15 @@ import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 
 import co.thnki.whistleblower.R;
+import co.thnki.whistleblower.WhistleBlower;
 import co.thnki.whistleblower.interfaces.ConnectivityListener;
 
 public class ConnectivityUtil
 {
-
-    private static final int GPS_ERROR_DIALOG_REQUEST = 1989;
-
-    public static boolean isConnected(Context context)
+    public static boolean isConnected()
     {
-        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivity = (ConnectivityManager) WhistleBlower.getAppContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null)
         {
             NetworkInfo info = connectivity.getActiveNetworkInfo();
@@ -31,7 +30,7 @@ public class ConnectivityUtil
 
     public static void isConnected(final ConnectivityListener listener, final Context context)
     {
-        if (!isConnected(context))
+        if (!isConnected())
         {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setMessage(R.string.no_network_access);
@@ -41,7 +40,7 @@ public class ConnectivityUtil
                         @Override
                         public void onClick(DialogInterface dialog, int which)
                         {
-                            if (isConnected(context))
+                            if (isConnected())
                             {
                                 if (listener != null)
                                 {

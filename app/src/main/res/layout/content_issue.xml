@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/issueDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:paddingBottom="20dp"
+                android:paddingEnd="10dp"
+                android:paddingStart="10dp"
+                android:paddingTop="20dp"
+                android:text="@string/issueDescription"
+                />
+
+            <RelativeLayout
+                android:id="@+id/issueImageContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#fff"
+                android:transitionName="@string/sharedElement1">
+
+                <ProgressBar
+                    android:layout_width="@dimen/loading"
+                    android:layout_centerInParent="true"
+                    android:layout_height="@dimen/loading"
+                    />
+
+                <co.thnki.whistleblower.view.SquareImageView
+                    android:id="@+id/issueImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:scaleType="centerCrop"
+                    android:src="@mipmap/default_img"
+                    />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/editPlaceContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                >
+
+                <TextView
+                    android:id="@+id/areaTypeName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/white"
+                    android:paddingBottom="20dp"
+                    android:paddingEnd="50dp"
+                    android:paddingStart="10dp"
+                    android:paddingTop="20dp"
+                    android:text="@string/placeName"
+                    />
+            </RelativeLayout>
+
+            <View
+                android:id="@+id/viewDivider2"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="20dp"
+                android:background="#ccc"/>
+
+            <LinearLayout
+                android:id="@+id/description_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:orientation="horizontal"
+                android:paddingBottom="20dp"
+                android:paddingTop="10dp"
+                android:weightSum="3"
+                >
+
+                <LinearLayout
+                    android:id="@+id/locationContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_drawable"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    >
+
+                    <ImageView
+                        android:id="@+id/locationIcon"
+                        android:layout_width="@dimen/issue_action_icon_size"
+                        android:layout_height="@dimen/issue_action_icon_size"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_margin="@dimen/issue_action_icon_margin"
+                        android:src="@mipmap/map_marker_icon_accent"
+                        />
+
+                    <TextView
+                        style="@style/issue_action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Map"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/shareContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_drawable"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/shareIcon"
+                        android:layout_width="@dimen/issue_action_icon_size"
+                        android:layout_height="@dimen/issue_action_icon_size"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_margin="@dimen/issue_action_icon_margin"
+                        android:src="@mipmap/share_icon_accent"
+                        />
+
+                    <TextView
+                        style="@style/issue_action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Share"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/volunteerContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_drawable"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/volunteerIcon"
+                        android:layout_width="@dimen/issue_action_icon_size"
+                        android:layout_height="@dimen/issue_action_icon_size"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_margin="@dimen/issue_action_icon_margin"
+                        android:src="@mipmap/volunteer_accent"
+                        />
+
+                    <TextView
+                        style="@style/issue_action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Volunteer"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+    <LinearLayout
+        android:id="@+id/commentProgressContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <ProgressBar
+            android:id="@+id/commentsProgress"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="10dp"
+            android:padding="10dp"
+            />
+    </LinearLayout>
+</LinearLayout>

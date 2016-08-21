@@ -38,6 +38,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private static final int REQUEST_CODE_GET_TOKEN = 199;
     private static final String LOGIN_STATUS = "login_status";
     private ProgressDialog mProgressDialog;
+    private TextView mTitleView;
+    private boolean mIsFetched;
 
 
     @SuppressWarnings("ConstantConditions")
@@ -48,10 +50,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         getSupportActionBar().hide();
         mPreference = WhistleBlower.getPreferences();
         setContentView(R.layout.activity_login);
-        TextView title = (TextView) findViewById(R.id.title);
-        title.setTypeface(WhistleBlower.getTypeFace());
+        mTitleView = (TextView) findViewById(R.id.title);
+        mTitleView.setTypeface(WhistleBlower.getTypeFace());
         checkGooglePlayServices();
-        startService(new Intent(this, NewsFeedsUpdateService.class));
+        if(ConnectivityUtil.isConnected())
+        {
+            startService(new Intent(this, NewsFeedsUpdateService.class));
+            mIsFetched = true;
+        }
     }
 
     private void checkGooglePlayServices()
@@ -197,6 +203,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @Override
     public void onInternetConnected()
     {
+        if(!mIsFetched)
+        {
+            startService(new Intent(this, NewsFeedsUpdateService.class));
+        }
         signIn();
     }
 
@@ -252,6 +262,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     {
 
     }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
     {

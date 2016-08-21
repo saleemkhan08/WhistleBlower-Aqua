@@ -53,6 +53,7 @@ public class IssuesDao
 
     public static void insert(Issue issue)
     {
+        delete(issue.issueId);
         WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(IssuesDao.ISSUE_ID, issue.issueId);
@@ -66,6 +67,7 @@ public class IssuesDao
         values.put(IssuesDao.RADIUS, issue.radius);
         values.put(IssuesDao.LATITUDE, issue.latitude);
         values.put(IssuesDao.LONGITUDE, issue.longitude);
+
         mWBDataBase.insert(IssuesDao.TABLE, values);
     }
 

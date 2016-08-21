@@ -2,15 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_weight="10"
+              android:layout_height="match_parent"
               android:background="#eee"
               android:orientation="vertical">
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:cardElevation="3dp">
+        android:layout_height="wrap_content">
 
         <RelativeLayout
             android:id="@+id/issueHeader"
@@ -27,7 +25,7 @@
                 android:layout_centerInParent="true"
                 android:layout_margin="10dp"
                 android:scaleType="centerCrop"
-                android:src="@mipmap/user_primary_dark_o"
+                android:src="@mipmap/user_icon_accent"
                 />
 
             <TextView
@@ -97,14 +95,29 @@
                         android:text="@string/issueDescription"
                         />
 
-                    <co.thnki.whistleblower.view.SquareImageView
-                        android:id="@+id/issueImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        android:src="@mipmap/default_img"
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:id="@+id/issueImageContainer"
+                        android:background="#fff"
                         android:transitionName="@string/sharedElement1"
-                        />
+                        android:layout_height="wrap_content">
+
+                        <ProgressBar
+                            android:layout_width="@dimen/loading"
+                            android:layout_centerInParent="true"
+                            android:layout_height="@dimen/loading"
+                            />
+
+                        <co.thnki.whistleblower.view.SquareImageView
+                            android:id="@+id/issueImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:layout_centerInParent="true"
+                            android:src="@mipmap/default_img"
+                            />
+
+                    </RelativeLayout>
 
                     <RelativeLayout
                         android:id="@+id/editPlaceContainer"
@@ -234,7 +247,6 @@
                 android:id="@+id/commentProgressContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 >
                 <ProgressBar
                     android:id="@+id/commentsProgress"

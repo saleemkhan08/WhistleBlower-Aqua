@@ -80,7 +80,13 @@ public class RemoteConfigService extends Service
                 });
 
         defaultTask();
+        updateIssueTable();
         return START_NOT_STICKY;
+    }
+
+    private void updateIssueTable()
+    {
+        startService(new Intent(this, NewsFeedsUpdateService.class));
     }
 
     private void finishJob()
@@ -130,7 +136,7 @@ public class RemoteConfigService extends Service
         long currentTime = System.currentTimeMillis();
         long difference = currentTime - mSharedPreferences.getLong(NOTIFICATION_TIME, 0);
 
-        if (difference > (1000*24*60*60))
+        if (difference > (1000*3*24*60*60))
         {
             Log.d("VERSION_CODE", BuildConfig.VERSION_CODE + " = "+versionCode);
             int configVersion = Integer.parseInt(versionCode);
@@ -142,7 +148,7 @@ public class RemoteConfigService extends Service
                 data.action1IntentTag = NotificationActionReceiver.UPDATE_APP;
                 data.action1IntentText = "Install";
                 data.contentText = "New version is available!";
-                data.contentTitle = "Location Alarm";
+                data.contentTitle = getString(R.string.app_name);
                 data.action2IntentIcon = R.mipmap.reject_grey;
                 data.action2IntentTag = NotificationActionReceiver.CANCEL_UPDATE;
                 data.action2IntentText = "Cancel";

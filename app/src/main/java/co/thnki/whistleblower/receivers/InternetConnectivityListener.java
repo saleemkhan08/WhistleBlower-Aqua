@@ -25,7 +25,7 @@ public class InternetConnectivityListener extends BroadcastReceiver
         Log.d("ConnectivityListener", "onReceive");
         if (intent.getExtras() != null)
         {
-            if (ConnectivityUtil.isConnected(context))
+            if (ConnectivityUtil.isConnected())
             {
                 Log.d("RemoteConfigService", "RemoteConfigService Started  : InternetConnectivityListener");
                 Otto.post(INTERNET_CONNECTED);

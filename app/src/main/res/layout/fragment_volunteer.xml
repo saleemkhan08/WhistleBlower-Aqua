@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:background="#eee"
               android:minWidth="300dp"
               android:orientation="vertical">
@@ -28,7 +29,7 @@
             android:layout_alignParentRight="true"
             android:background="@drawable/bg_drawable"
             android:padding="13dp"
-            android:src="@mipmap/cross"/>
+            android:src="@mipmap/ic_clear_white_24dp"/>
     </RelativeLayout>
 
     <ScrollView
@@ -41,126 +42,115 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/ngoSuggestionContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <EditText
-                    android:id="@+id/comment2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/transparent"
-                    android:hint="@string/comment"
-                    android:padding="20dp"
-                    />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#ccc"/>
-                <EditText
-                    android:id="@+id/ngoName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/transparent"
-                    android:hint="@string/ngo_name"
-                    android:padding="20dp"
-                    />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="#ccc"/>
-
-                <EditText
-                    android:id="@+id/ngoUrl"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/transparent"
-                    android:hint="@string/website_url"
-                    android:padding="20dp"
-                    />
-
-                <LinearLayout
-                    android:id="@+id/saveNgoDetails"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#eee"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/bg_drawable">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:padding="10dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:text="@string/save"
-                                android:textAllCaps="true"
-                                android:textAppearance="?android:textAppearanceMedium"
-                                android:textColor="@color/colorPrimaryDark"/>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="0.5dp"
-                        android:background="#ccc"/>
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
                 android:id="@+id/commentContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:orientation="vertical">
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     >
-
-                    <EditText
-                        android:id="@+id/comment"
+                    <android.support.design.widget.TextInputLayout
+                        android:id="@+id/input_layout_name"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_toStartOf="@+id/postComment"
-                        android:background="@color/transparent"
-                        android:hint="@string/suggestSolution"
-                        android:minHeight="100dp"
-                        android:padding="20dp"
-                        android:textColor="@color/colorPrimaryDark"/>
-
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:id="@+id/postComment"
-                        android:background="@drawable/bg_drawable"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="0dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="0dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
                         android:layout_height="wrap_content">
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="10dp"
-                            android:src="@mipmap/ic_send_black_36dp"/>
-                    </RelativeLayout>
 
-                </RelativeLayout>
+                        <EditText
+                            android:id="@+id/comment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:hint="@string/suggestSolution" />
+                    </android.support.design.widget.TextInputLayout>
+
+                </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/suggestNgoButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/suggestNgoButtonContainer"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="15dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginStart="20dp"
+                        android:id="@+id/suggestNgoButton"
+                        android:background="@drawable/post_issue_bg"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:textColor="@color/button_color"
+                        android:text="@string/suggestNgo"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ngoSuggestionContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    >
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="0dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="0dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:layout_height="wrap_content">
+
+                        <EditText
+                            android:id="@+id/ngoName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:hint="@string/ngo_name" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="0dp"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:layout_height="wrap_content">
+
+                        <EditText
+                            android:id="@+id/ngoUrl"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:hint="@string/website_url" />
+                    </android.support.design.widget.TextInputLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/postComment"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="#eee"
@@ -177,14 +167,28 @@
                             android:orientation="vertical"
                             android:padding="10dp">
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:text="@string/suggestNgo"
-                                android:textAllCaps="true"
-                                android:textAppearance="?android:textAppearanceMedium"
-                                android:textColor="@color/colorPrimaryDark"/>
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_gravity="center"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/post"
+                                    android:textAllCaps="true"
+                                    android:paddingStart="10dp"
+                                    android:paddingEnd="5dp"
+                                    android:textAppearance="?android:textAppearanceMedium"
+                                    android:textColor="@color/colorPrimaryDark"/>
+
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="24dp"
+                                    android:src="@mipmap/ic_send_black_36dp"/>
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>

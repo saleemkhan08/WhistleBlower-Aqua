@@ -34,6 +34,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -82,6 +83,7 @@ public class MapFragment extends SupportMapFragment implements
     public static final String LATLNG = "latlng";
     public static final String RADIUS = "radius";
     private static final String FRAGMENT_TAG_SETTINGS = "settingsFragment";
+    public static final String IS_RELOAD_NECESSARY = "isReloadNecessary";
     @BindString(R.string.noInternet)
     String NO_INTERNET;
 
@@ -171,7 +173,7 @@ public class MapFragment extends SupportMapFragment implements
     private int mRadiusType;
     private float mCurrentZoom;
     private boolean mIsPlacesApiResult;
-    private MarkerAndCirclesUtil mMarkerAndCircle;
+    public MarkerAndCirclesUtil mMarkerAndCircle;
     private Circle mActionCircle;
 
     @BindString(R.string.slowInternet)
@@ -184,6 +186,8 @@ public class MapFragment extends SupportMapFragment implements
     private Toast mAddPhotoToast;
     private Toast mSelectLocationToast;
     private boolean mTravelModeUiState;
+    private boolean mIsActionDown;
+    private CameraPosition mCameraPosition;
 
     public MapFragment()
     {
@@ -197,6 +201,9 @@ public class MapFragment extends SupportMapFragment implements
         mOriginalContentView = super.onCreateView(inflater, parent, savedInstanceState);
         TouchableWrapper mTouchView = new TouchableWrapper(getActivity(), this);
         mTouchView.addView(mOriginalContentView);
+        mPreferences = WhistleBlower.getPreferences();
+        mPreferences.edit().putBoolean(MapFragment.IS_RELOAD_NECESSARY, true).apply();
+        getMapAsync(this);
         return mTouchView;
     }
 
@@ -207,7 +214,7 @@ public class MapFragment extends SupportMapFragment implements
         Log.d("MapFragmentFlowLogs", "onActivityCreated");
         mActivity = (AppCompatActivity) getActivity();
         ButterKnife.bind(this, mActivity);
-        mPreferences = WhistleBlower.getPreferences();
+
         startLocationTrackingService();
         Log.d("MapFragmentFlowLogs", "Start Service Called");
         setupRadiusSeekBar();
@@ -221,9 +228,11 @@ public class MapFragment extends SupportMapFragment implements
         super.onResume();
         Otto.register(this);
         mSearchWaitProgress.setVisibility(View.GONE);
+        searchIcon.setClickable(true);
+        searchText.setClickable(true);
         Log.d("MapFragmentFlowLogs", "onResume");
-        getMapAsync(this);
         changeTravelModeState(false, false);
+        updateLocationInfo();
     }
 
     @SuppressWarnings("MissingPermission")
@@ -233,7 +242,9 @@ public class MapFragment extends SupportMapFragment implements
         mGoogleMap = googleMap;
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
-        mMarkerAndCircle = new MarkerAndCirclesUtil(mGoogleMap, accentColor, radiusColor);
+        mGoogleMap.getUiSettings().setCompassEnabled(false);
+        Log.d("MarkerNCircleAddingTask", "onMapReady");
+        reloadMarkersAndCircles();
         if (PermissionUtil.isLocationPermissionAvailable())
         {
             mGoogleMap.setMyLocationEnabled(false);
@@ -248,6 +259,15 @@ public class MapFragment extends SupportMapFragment implements
             showMyLocOnMap(false);
             boolean isTravelModeOn = mPreferences.getBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false);
             changeTravelModeState(isTravelModeOn, false);
+        }
+    }
+
+    public void reloadMarkersAndCircles()
+    {
+        if (mPreferences.getBoolean(IS_RELOAD_NECESSARY, false))
+        {
+            mMarkerAndCircle = new MarkerAndCirclesUtil(mGoogleMap, accentColor, radiusColor);
+            mPreferences.edit().putBoolean(MapFragment.IS_RELOAD_NECESSARY, false).apply();
         }
     }
 
@@ -420,7 +440,7 @@ public class MapFragment extends SupportMapFragment implements
         if (PermissionUtil.isConnected(mActivity))
         {
             setupRadiusSeekBar();
-            mSubmitButton.setIcon(R.mipmap.add_photo);
+            mSubmitButton.setIcon(R.mipmap.add_a_photo_white);
             isAddPhotoButtonShown = true;
 
             TransitionUtil.slideTransition(radiusSeekBarInnerWrapper);
@@ -486,9 +506,17 @@ public class MapFragment extends SupportMapFragment implements
             {
                 startLocationTrackingService();
                 showMyLocOnMap(true);
-                if (mPreferences.getBoolean(SettingsFragment.SHOW_HINTS,true))
+                if (mPreferences.getBoolean(SettingsFragment.SHOW_HINTS, true))
                 {
-                    toast(getString(R.string.travel_mode_helptext));
+                    if(mTravelModeUiState)
+                    {
+                        toast(getString(R.string.travel_mode_off_helptext));
+                    }
+                    else
+                    {
+                        toast(getString(R.string.travel_mode_on_helptext));
+                    }
+
                 }
             }
         });
@@ -672,6 +700,7 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActionUp()
     {
+        mIsActionDown = false;
         TransitionUtil.slideTransition(map_fab_buttons);
         map_fab_buttons.setVisibility(View.VISIBLE);
 
@@ -687,6 +716,7 @@ public class MapFragment extends SupportMapFragment implements
         {
             drawCircleOnMap();
         }
+        onCameraChange(mCameraPosition);
     }
 
     @Override
@@ -704,6 +734,7 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActionDown()
     {
+        mIsActionDown = true;
         mOnActionDownLatLng = mGeoCodeLatLng;
         TransitionUtil.slideTransition(map_fab_buttons);
         map_fab_buttons.setVisibility(View.GONE);
@@ -725,33 +756,39 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        switch (requestCode)
+        try
         {
-            case PLACE_AUTOCOMPLETE_REQUEST_CODE:
-                Place place = PlaceAutocomplete.getPlace(mActivity, data);
-                Log.d("PlacesApi", "" + place);
-                mIsPlacesApiResult = true;
+            switch (requestCode)
+            {
+                case PLACE_AUTOCOMPLETE_REQUEST_CODE:
+                    Place place = PlaceAutocomplete.getPlace(mActivity, data);
+                    Log.d("PlacesApi", "" + place);
+                    mIsPlacesApiResult = true;
 
-                switch (resultCode)
-                {
-                    case Activity.RESULT_OK:
-                        mGeoCodeLatLng = place.getLatLng();
-                        Log.d("PlacesApi", "" + place.getAddress());
-                        Log.d("PlacesApi", "" + place.getLatLng());
-                        Log.d("PlacesApi", "" + place.getName());
+                    switch (resultCode)
+                    {
+                        case Activity.RESULT_OK:
+                            mGeoCodeLatLng = place.getLatLng();
+                            Log.d("PlacesApi", "" + place.getAddress());
+                            Log.d("PlacesApi", "" + place.getLatLng());
+                            Log.d("PlacesApi", "" + place.getName());
 
-                        gotoLatLng(mGeoCodeLatLng, true);
-                        searchText.setText(place.getAddress());
-                        break;
-                    case PlaceAutocomplete.RESULT_ERROR:
-                        Log.d("PlacesApi", "RESULT_ERROR : " + data);
-                        toast(SLOW_INTERNET);
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        Log.d("PlacesApi", "RESULT_CANCELED");
-                        break;
-                }
-                break;
+                            gotoLatLng(mGeoCodeLatLng, true);
+                            searchText.setText(place.getAddress());
+                            break;
+                        case PlaceAutocomplete.RESULT_ERROR:
+                            Log.d("PlacesApi", "RESULT_ERROR : " + data);
+                            toast(SLOW_INTERNET);
+                            break;
+                        case Activity.RESULT_CANCELED:
+                            Log.d("PlacesApi", "RESULT_CANCELED");
+                            break;
+                    }
+                    break;
+            }
+        }catch (NullPointerException e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -759,31 +796,7 @@ public class MapFragment extends SupportMapFragment implements
     public void onLocationChanged(Location location)
     {
         saveLocation(location);
-        double dist = distFrom(mGeoCodeLatLng, getLatLng());
-        if (dist < 30)
-        {
-            showMyLocOnMap(true);
-        }
-        else if (getTravelMode())
-        {
-            showMyLocOnMap(true);
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    if (!travelModeOffHelpTextShown)
-                    {
-                        travelModeOffHelpTextShown = true;
-                    }
-                }
-            }, 5000);
-        }
-        else
-        {
-            showMyLocationMarkerAndCircle(getLatLng(), location.getAccuracy());
-        }
+        showMyLocOnMap(true);
     }
 
     private void showMyLocationMarkerAndCircle(LatLng latLng, float accuracy)
@@ -797,7 +810,8 @@ public class MapFragment extends SupportMapFragment implements
                 .position(latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
-                .icon(LocationUtil.getMapMarker(mActivity, R.mipmap.my_loc_dot, 17)));
+                .zIndex(10)
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.my_loc_dot)));
 
         if (myLocCircle != null)
         {
@@ -814,18 +828,22 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onCameraChange(CameraPosition cameraPosition)
     {
-        double dist = distFrom(cameraPosition.target, getLatLng());
-        if (dist > 100)
+        mCameraPosition = cameraPosition;
+        if (!mIsActionDown)
         {
-            changeTravelModeState(false, true);
-        }
-        mCurrentZoom = cameraPosition.zoom;
-        mGeoCodeLatLng = cameraPosition.target;
-        updateLocationInfo();
-        mRetryAttemptsCount = 0;
-        if (isAddPhotoButtonShown)
-        {
-            drawCircleOnMap();
+            double dist = distFrom(cameraPosition.target, getLatLng());
+            if (dist > 100)
+            {
+                changeTravelModeState(false, true);
+            }
+            mCurrentZoom = cameraPosition.zoom;
+            mGeoCodeLatLng = cameraPosition.target;
+            updateLocationInfo();
+            mRetryAttemptsCount = 0;
+            if (isAddPhotoButtonShown)
+            {
+                drawCircleOnMap();
+            }
         }
     }
 
@@ -945,30 +963,38 @@ public class MapFragment extends SupportMapFragment implements
     private void updateLocationInfo()
     {
         Log.d("MapFragmentFlowLogs", "updateLocationInfo");
+
         if (PermissionUtil.isConnected(mActivity))
         {
-            if (mGeoCoderTask != null)
+            try
             {
-                double dist = distFrom(mGeoCoderTask.mLatLng, mGeoCodeLatLng);
-                if (dist > 5)
+                if (mGeoCoderTask != null && mGeoCodeLatLng != null && mGeoCoderTask.mLatLng != null)
+                {
+                    double dist = distFrom(mGeoCoderTask.mLatLng, mGeoCodeLatLng);
+                    if (dist > 5 || searchText.getText().equals(NO_INTERNET) || searchText.getText().equals(SLOW_INTERNET))
+                    {
+                        showSearchProgress();
+                        cancelAsyncTask(mGeoCoderTask);
+                        mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
+                        mGeoCoderTask.execute(mRetryAttemptsCount++);
+                    }
+                }
+                else
                 {
                     showSearchProgress();
-                    cancelAsyncTask(mGeoCoderTask);
                     mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
                     mGeoCoderTask.execute(mRetryAttemptsCount++);
                 }
-            }
-            else
+            }catch (NullPointerException e)
             {
-                showSearchProgress();
-                mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
-                mGeoCoderTask.execute(mRetryAttemptsCount++);
+                e.printStackTrace();
             }
         }
         else
         {
             searchText.setText(NO_INTERNET);
         }
+
     }
 
     private void cancelAsyncTask(AsyncTask task)
@@ -1051,13 +1077,14 @@ public class MapFragment extends SupportMapFragment implements
 
     @SuppressWarnings("WeakerAccess")
     @OnClick({R.id.searchIcon, R.id.hoverPlaceName})
-    public void searchPlace()
+    public void searchPlace(final View view)
     {
+        view.setClickable(false);
         changeTravelModeState(false, false);
-        mSearchWaitProgress.setVisibility(View.VISIBLE);
         Log.d("mSearchWaitProgress", "visible");
         if (PermissionUtil.isConnected(mActivity))
         {
+            mSearchWaitProgress.setVisibility(View.VISIBLE);
             Handler handler = new Handler();
             handler.postDelayed(new Runnable()
             {
@@ -1075,6 +1102,7 @@ public class MapFragment extends SupportMapFragment implements
                     }
                 }
             }, 500);
+
         }
         else
         {
@@ -1083,13 +1111,13 @@ public class MapFragment extends SupportMapFragment implements
     }
 
     @Subscribe
-    public void onDismiss(String action)
+    public void ottoListener(String action)
     {
         Log.d("ConnectivityListener", "onInternetConnected : map fragment : " + action);
         switch (action)
         {
             case DIALOG_DISMISS:
-                mMarkerAndCircle = new MarkerAndCirclesUtil(mGoogleMap, accentColor, radiusColor);
+                reloadMarkersAndCircles();
                 showMyLocationMarkerAndCircle(getLatLng(), getAccuracy());
                 break;
             case InternetConnectivityListener.INTERNET_CONNECTED:
@@ -1116,13 +1144,13 @@ public class MapFragment extends SupportMapFragment implements
     public boolean onMarkerClick(Marker marker)
     {
         String id = mMarkerAndCircle.getId(marker.getId());
-        if(id != null)
+        if (id != null)
         {
-            Issue issue =  IssuesDao.getIssue(id);
-            if(issue != null)
+            Issue issue = IssuesDao.getIssue(id);
+            if (issue != null)
             {
                 Intent intent = new Intent(mActivity, IssueActivity.class);
-                intent.putExtra(ISSUE_DATA,issue);
+                intent.putExtra(ISSUE_DATA, issue);
                 mActivity.startActivity(intent);
                 return true;
             }

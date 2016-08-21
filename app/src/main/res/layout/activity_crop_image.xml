@@ -2,7 +2,6 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -22,5 +21,5 @@
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@id/crop_image"
         app:layout_anchorGravity="bottom|end"
-        android:src="@mipmap/save_icon_alt"/>
+        android:src="@mipmap/save_white"/>
 </android.support.design.widget.CoordinatorLayout>
